@@ -1,0 +1,12 @@
+USE sentinel_ai_security;
+CREATE TABLE IF NOT EXISTS occurrence_entries (
+    occurrence_entry_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, occurrence_entry_uuid CHAR(36) NOT NULL, company_id BIGINT UNSIGNED NOT NULL, site_id BIGINT UNSIGNED NOT NULL, employee_id BIGINT UNSIGNED NULL, shift_assignment_id BIGINT UNSIGNED NULL,
+    entry_reference VARCHAR(80) NOT NULL, entry_type VARCHAR(100) NOT NULL, occurred_at DATETIME NOT NULL, entry_text TEXT NOT NULL, handover_required BOOLEAN NOT NULL DEFAULT FALSE, handover_reference VARCHAR(100) NULL, created_by_user_id BIGINT UNSIGNED NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_occurrence_entries_company FOREIGN KEY (company_id) REFERENCES companies(company_id) ON DELETE CASCADE, CONSTRAINT fk_occurrence_entries_site FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE RESTRICT, CONSTRAINT fk_occurrence_entries_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL, CONSTRAINT fk_occurrence_entries_shift FOREIGN KEY (shift_assignment_id) REFERENCES shift_assignments(shift_assignment_id) ON DELETE SET NULL, CONSTRAINT fk_occurrence_entries_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    UNIQUE KEY uq_occurrence_entries_uuid (occurrence_entry_uuid), UNIQUE KEY uq_occurrence_entries_company_reference (company_id,entry_reference), INDEX idx_occurrence_entries_company_site_occurred (company_id,site_id,occurred_at), INDEX idx_occurrence_entries_company_shift (company_id,shift_assignment_id)
+);
+CREATE TABLE IF NOT EXISTS occurrence_entry_revisions (
+    occurrence_entry_revision_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, company_id BIGINT UNSIGNED NOT NULL, occurrence_entry_id BIGINT UNSIGNED NOT NULL, revision_number INT UNSIGNED NOT NULL, previous_entry_text TEXT NOT NULL, revision_reason VARCHAR(500) NOT NULL, revised_by_user_id BIGINT UNSIGNED NULL, revised_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_occurrence_revisions_company FOREIGN KEY (company_id) REFERENCES companies(company_id) ON DELETE CASCADE, CONSTRAINT fk_occurrence_revisions_entry FOREIGN KEY (occurrence_entry_id) REFERENCES occurrence_entries(occurrence_entry_id) ON DELETE RESTRICT, CONSTRAINT fk_occurrence_revisions_user FOREIGN KEY (revised_by_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    UNIQUE KEY uq_occurrence_revisions_entry_number (occurrence_entry_id,revision_number), INDEX idx_occurrence_revisions_company_entry (company_id,occurrence_entry_id)
+);

@@ -1,0 +1,8 @@
+# Keep your real keystore and this populated file outside source control.
+# Prefer CI secret variables or a protected local Gradle user-properties file.
+SENTINEL_SERVER_URL=https://sentinel.example.com
+SENTINEL_SIGNUP_URL=https://sentinel.example.com/admin/index.html?signup=FREE
+SENTINEL_RELEASE_STORE_FILE=C:/secure/sentinel-release.jks
+SENTINEL_RELEASE_STORE_PASSWORD=replace-me
+SENTINEL_RELEASE_KEY_ALIAS=sentinel-release
+SENTINEL_RELEASE_KEY_PASSWORD=replace-me

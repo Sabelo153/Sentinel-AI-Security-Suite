@@ -1,0 +1,17 @@
+# Copy this block into C:/xampp/apache/conf/extra/httpd-vhosts.conf.
+# Replace sentinel.example.com only after a real DNS name is available.
+
+<VirtualHost *:80>
+    ServerName sentinel.local
+    ServerAlias 192.168.1.187
+    DocumentRoot "C:/Development/Sentinel-AI-Security-Suite/public"
+
+    <Directory "C:/Development/Sentinel-AI-Security-Suite/public">
+        AllowOverride All
+        Options -Indexes +FollowSymLinks
+        Require all granted
+    </Directory>
+
+    ErrorLog "logs/sentinel-error.log"
+    CustomLog "logs/sentinel-access.log" combined
+</VirtualHost>

@@ -1,0 +1,7 @@
+USE sentinel_ai_security;
+CREATE TABLE IF NOT EXISTS alerts (
+    alert_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, company_id BIGINT UNSIGNED NOT NULL, alert_type VARCHAR(120) NOT NULL, severity ENUM('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL DEFAULT 'LOW', related_entity_type VARCHAR(100) NULL, related_entity_id VARCHAR(100) NULL, message VARCHAR(2000) NOT NULL, payload_json JSON NULL,
+    status ENUM('OPEN','ACKNOWLEDGED','RESOLVED','DISMISSED') NOT NULL DEFAULT 'OPEN', occurred_at DATETIME NOT NULL, acknowledged_at DATETIME NULL, acknowledged_by_user_id BIGINT UNSIGNED NULL, resolved_at DATETIME NULL, resolved_by_user_id BIGINT UNSIGNED NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_alerts_company FOREIGN KEY (company_id) REFERENCES companies(company_id) ON DELETE CASCADE, CONSTRAINT fk_alerts_acknowledged_by FOREIGN KEY (acknowledged_by_user_id) REFERENCES users(user_id) ON DELETE SET NULL, CONSTRAINT fk_alerts_resolved_by FOREIGN KEY (resolved_by_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_alerts_company_status (company_id,status), INDEX idx_alerts_company_severity (company_id,severity), INDEX idx_alerts_company_occurred_at (company_id,occurred_at), INDEX idx_alerts_related_entity (company_id,related_entity_type,related_entity_id)
+);

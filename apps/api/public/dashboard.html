@@ -1,0 +1,128 @@
+<!-- Provides the dashboard implementation. -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sentinel Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Sentinel Core Dashboard</h1>
+        <button class="btn btn-outline-secondary btn-sm" id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">Login</h2>
+            <div class="row g-2">
+                <div class="col-md-4"><input id="email" class="form-control" placeholder="Email"></div>
+                <div class="col-md-4"><input id="password" type="password" class="form-control" placeholder="Password"></div>
+                <div class="col-md-2"><button id="loginBtn" class="btn btn-primary w-100">Login</button></div>
+                <div class="col-md-2"><button id="loadBtn" class="btn btn-success w-100">Load Widgets</button></div>
+            </div>
+            <small class="text-muted d-block mt-2">Use a seeded user such as admin@abcsecurity.local</small>
+            <div id="status" class="mt-2 small"></div>
+        </div>
+    </div>
+
+    <div class="row g-3" id="widgets"></div>
+</div>
+
+<script>
+const apiBase = '/api/v1';
+const widgetKeys = [
+    'companies',
+    'clients',
+    'sites',
+    'employees',
+    'users',
+    'todays_attendance',
+    'open_incidents',
+    'recent_activity'
+];
+
+function setStatus(text, isError=false){
+    const el = document.getElementById('status');
+    el.textContent = text;
+    el.className = 'mt-2 small ' + (isError ? 'text-danger' : 'text-success');
+}
+
+function token(){
+    return localStorage.getItem('sentinel_token') || '';
+}
+
+async function login(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    const response = await fetch(`${apiBase}/auth/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+    });
+
+    const payload = await response.json();
+    if (!response.ok || !payload.success) {
+        throw new Error(payload.message || 'Login failed');
+    }
+
+    localStorage.setItem('sentinel_token', payload.data.token);
+    localStorage.setItem('sentinel_company_id', String(payload.data.user.company_id || 0));
+    setStatus('Login successful. Token stored.');
+}
+
+async function loadWidgets(){
+    const companyId = localStorage.getItem('sentinel_company_id') || '0';
+    const response = await fetch(`${apiBase}/dashboard/summary?company_id=${encodeURIComponent(companyId)}`, {
+        headers: {Authorization: `Bearer ${token()}`}
+    });
+
+    const payload = await response.json();
+    if (!response.ok || !payload.success) {
+        throw new Error(payload.message || 'Could not load dashboard');
+    }
+
+    const data = payload.data || {};
+    const wrap = document.getElementById('widgets');
+    wrap.innerHTML = '';
+
+    for (const key of widgetKeys) {
+        const value = data[key] ?? 0;
+        const title = key.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const card = document.createElement('div');
+        card.className = 'col-sm-6 col-lg-3';
+        card.innerHTML = `
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">${title}</div>
+                    <div class="display-6 fw-semibold">${value}</div>
+                </div>
+            </div>
+        `;
+        wrap.appendChild(card);
+    }
+
+    setStatus('Dashboard widgets loaded.');
+}
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    try { await login(); }
+    catch (error) { setStatus(error.message, true); }
+});
+
+document.getElementById('loadBtn').addEventListener('click', async () => {
+    try { await loadWidgets(); }
+    catch (error) { setStatus(error.message, true); }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('sentinel_token');
+    localStorage.removeItem('sentinel_company_id');
+    setStatus('Token cleared.');
+});
+</script>
+</body>
+</html>

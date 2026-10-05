@@ -1,0 +1,1160 @@
+<!-- Provides the geofence-mapping implementation. -->
+<!doctype html>
+<html lang="en-ZA">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sentinel Site Geofence Mapping</title>
+    <link rel="icon" href="/assets/icons/favicon.ico?v=2" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=2">
+    <link rel="manifest" href="/site.webmanifest?v=2">
+    <meta name="theme-color" content="#0e4435">
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f4f7f1;
+            --panel: #ffffff;
+            --border: #d7dfd1;
+            --text: #202a20;
+            --muted: #5c6a5c;
+            --accent: #186a5d;
+            --accent-2: #14856f;
+            --warn: #bb8b1f;
+            --danger: #a33a3a;
+            --success: #1f7f40;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #f6f8f4 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        h1 { margin: 0; font-size: clamp(2rem, 2.4vw, 2.8rem); }
+        p.lead { margin: 8px 0 0; color: var(--muted); max-width: 780px; }
+
+        .grid { display: grid; gap: 18px; }
+        .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 18px 30px rgba(20, 50, 30, 0.06);
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .section-title h2 { margin: 0; font-size: 1.1rem; letter-spacing: 0.02em; }
+        .section-title .note { color: var(--muted); font-size: 0.92rem; }
+
+        label {
+            display: grid;
+            gap: 8px;
+            font-size: 0.92rem;
+            color: var(--muted);
+        }
+
+        input, select, button {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            font: inherit;
+            color: var(--text);
+            background: #fff;
+        }
+
+        input[type="number"] { appearance: textfield; }
+        button { cursor: pointer; font-weight: 700; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        button:hover { transform: translateY(-1px); }
+
+        .button-primary { background: var(--accent); color: #fff; border-color: transparent; }
+        .button-secondary { background: var(--accent-2); color: #fff; border-color: transparent; }
+        .button-ghost { background: #f7faf7; color: var(--accent); }
+        .button-danger { background: var(--danger); color: #fff; }
+        .button-warning { background: var(--warn); color: #fff; }
+        .button-disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 7px 14px;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .pill-active { background: var(--success); }
+        .pill-pending { background: var(--warn); }
+        .pill-draft { background: #4f8a6f; }
+        .pill-archived { background: #6f7a74; }
+
+        .info-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .info-card { background: #f9faf8; border: 1px solid #d7dfd1; border-radius: 14px; padding: 16px; }
+        .info-card strong { display: block; margin-bottom: 6px; }
+
+        .map-preview {
+            position: relative;
+            min-height: 340px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #edf4ef 0%, #f8fbf7 100%);
+            border: 1px solid #dbe5d8;
+            overflow: hidden;
+        }
+        .map-preview svg { width: 100%; height: 100%; display: block; }
+        .map-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .map-legend span { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--muted); }
+        .map-swatch { width: 12px; height: 12px; border-radius: 999px; display: inline-block; }
+        .swatch-boundary { background: #1f7f40; }
+        .swatch-point { background: #0f4d3e; }
+        .swatch-start { background: #145a4a; }
+        .swatch-tolerance { background: rgba(29, 112, 83, 0.18); border: 1px solid #1f7f40; }
+
+        .notification { padding: 14px 16px; border-radius: 14px; border: 1px solid transparent; font-size: 0.94rem; }
+        .notification.info { background: #eef6ef; border-color: #cfe2d2; color: #2b5b41; }
+        .notification.warn { background: #fff6e5; border-color: #f3d7a2; color: #7f5c26; }
+        .notification.error { background: #fbeaea; border-color: #f2b8b8; color: #7a2d2d; }
+        .notification.success { background: #e9f7ed; border-color: #b7ddc6; color: #285c33; }
+
+        .log-panel { max-height: 320px; overflow: auto; background: #f7faf7; border: 1px solid #d6ded5; border-radius: 14px; padding: 16px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.95rem; color: var(--text); }
+        .log-entry { margin-bottom: 10px; }
+
+        @media (max-width: 1024px) {
+            .grid.two, .grid.three { grid-template-columns: 1fr; }
+        }
+        body { opacity: 0; transform: translateY(5px); transition: opacity .34s ease, transform .42s cubic-bezier(.22,1,.36,1); }
+        body.ready { opacity: 1; transform: none; }
+        .panel { animation: panel-in .42s cubic-bezier(.22,1,.36,1) both; transition: transform .24s ease, box-shadow .24s ease, border-color .24s ease; }
+        .panel:nth-child(2) { animation-delay: 55ms; }
+        .panel:nth-child(3) { animation-delay: 90ms; }
+        .panel:hover { transform: translateY(-2px); box-shadow: 0 22px 40px rgba(20,50,30,.09); }
+        button,input,select,textarea { transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease, transform .16s ease, opacity .2s ease; }
+        button:active:not(:disabled) { transform: scale(.98); }
+        input:focus,select:focus,textarea:focus { outline: 0; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(20,133,111,.13); }
+        #previewSvg > * { animation: preview-in .35s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes panel-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        @keyframes preview-in { from { opacity: 0; transform: scale(.98); transform-origin: center; } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { body,body.ready,.panel,#previewSvg>* { opacity: 1; transform: none; transition: none; animation: none; } }
+    </style>
+</head>
+<body>
+<script>location.replace('/admin/#geofences');</script>
+<div class="page">
+    <header>
+        <div>
+            <h1>Site Geofence Mapping</h1>
+            <p class="lead">Inspector and manager mapping flow for site boundaries, tolerance preview, approval, and active guard GPS evaluation.</p>
+        </div>
+        <a href="/" class="button button-ghost">Back to API Console</a>
+    </header>
+
+    <div class="grid two">
+        <section class="panel">
+            <div class="section-title">
+                <h2>Connection &amp; Site</h2>
+                <span class="note">Use a bearer token from your auth flow.</span>
+            </div>
+
+            <div class="grid two">
+                <label>
+                    Bearer token
+                    <input id="bearerToken" placeholder="Paste bearer token here">
+                </label>
+                <label>
+                    Inspector role
+                    <select id="inspectorRole">
+                        <option value="INSPECTOR">INSPECTOR</option>
+                        <option value="SITE_MANAGER">SITE_MANAGER</option>
+                        <option value="AREA_MANAGER">AREA_MANAGER</option>
+                        <option value="OPERATIONS_MANAGER">OPERATIONS_MANAGER</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="grid two" style="margin-top: 14px;">
+                <label>
+                    Site selector
+                    <select id="siteSelect">
+                        <option value="">Select a site</option>
+                    </select>
+                </label>
+                <label>
+                    Selected site ID
+                    <input id="siteId" type="number" readonly placeholder="Choose a site">
+                </label>
+            </div>
+
+            <div class="grid two" style="margin-top: 14px;">
+                <label>
+                    Site name
+                    <input id="siteName" readonly placeholder="Choose a site">
+                </label>
+                <label>
+                    Lifecycle status
+                    <input id="siteStatus" readonly placeholder="Choose a site">
+                </label>
+                <div></div>
+            </div>
+
+            <div class="actions" style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+                <button class="button button-primary" type="button" onclick="loadSites()">Load Sites</button>
+                <button class="button button-secondary" type="button" onclick="loadActiveGeofence()">Load Active Boundary</button>
+                <button class="button button-ghost" type="button" onclick="loadSiteHistory()">Load Site History</button>
+            </div>
+            <div id="siteDetailsInfo" class="info-card" style="margin-top: 18px; display:none;"></div>
+
+            <div id="activeGeofenceInfo" class="info-card" style="margin-top: 18px; display:none;"></div>
+            <div id="siteHistoryInfo" class="info-card" style="margin-top: 18px; display:none;"></div>
+        </section>
+
+        <section class="panel">
+            <div class="section-title">
+                <h2>Mapping Controls</h2>
+                <span class="note">Walk the perimeter and capture points by GPS.</span>
+            </div>
+
+            <div class="info-row" style="margin-bottom: 16px; gap: 12px;">
+                <div class="info-card" style="flex: 1; min-width: 180px;">
+                    <strong>Current position</strong>
+                    <div id="currentPosition">No fix yet</div>
+                    <div id="currentAccuracy" style="margin-top: 6px; color: var(--muted);"></div>
+                </div>
+                <div class="info-card" style="flex: 1; min-width: 180px;">
+                    <strong>Point capture</strong>
+                    <div id="pointCount">0 points captured</div>
+                    <div id="returnToStart" style="margin-top:6px; color: var(--muted);">Return-to-start status will appear here.</div>
+                </div>
+            </div>
+
+            <div class="grid two">
+                <button class="button button-primary" type="button" onclick="handleStartMapping()">Start Mapping</button>
+                <button id="pauseMappingButton" class="button button-secondary button-disabled" type="button" onclick="togglePauseMapping()" disabled>Pause Mapping</button>
+            </div>
+
+            <div class="info-card" style="margin-top: 14px;">
+                <strong>GPS status</strong>
+                <div id="gpsStatus">Not tracking yet. Start mapping to request device GPS permission.</div>
+            </div>
+
+            <div class="grid three" style="margin-top: 16px;">
+                <label>
+                    Capture accuracy threshold
+                    <input id="acceptAccuracy" type="number" value="5" min="1" step="1">
+                </label>
+                <label>
+                    Warn threshold
+                    <input id="warnAccuracy" type="number" value="10" min="1" step="1">
+                </label>
+                <label>
+                    Auto-capture distance (m)
+                    <input id="autoCaptureDistance" type="number" value="5" min="1" step="1">
+                </label>
+            </div>
+
+            <div class="grid two" style="margin-top: 16px;">
+                <button class="button button-secondary" type="button" onclick="capturePoint()">Capture Point</button>
+                <button class="button button-ghost" type="button" onclick="undoPoint()">Undo Last Point</button>
+            </div>
+
+            <div class="grid two" style="margin-top: 16px;">
+                <label>
+                    Tolerance (meters)
+                    <input id="toleranceMeters" type="number" value="5" min="1" step="1">
+                </label>
+                <label>
+                    Mapping status
+                    <input id="mappingStatus" value="Idle" disabled>
+                </label>
+            </div>
+
+            <button class="button button-danger" type="button" style="margin-top: 16px;" onclick="finishMapping()">Finish Mapping</button>
+
+            <div class="map-preview" style="margin-top: 22px;">
+                <svg id="previewSvg" viewBox="0 0 240 240" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+
+            <div class="map-legend">
+                <span><span class="map-swatches"><span class="map-swatch swatch-boundary"></span></span> Boundary</span>
+                <span><span class="map-swatches"><span class="map-swatch swatch-point"></span></span> Captured point</span>
+                <span><span class="map-swatches"><span class="map-swatch swatch-start"></span></span> Start point</span>
+            </div>
+        </section>
+    </div>
+
+    <div class="grid two" style="margin-top: 24px;">
+        <section class="panel">
+            <div class="section-title">
+                <h2>Submit &amp; Approval</h2>
+                <span class="note">Draft flows through pending approval before activation.</span>
+            </div>
+
+            <div class="grid two">
+                <label>
+                    Draft geofence ID
+                    <input id="draftId" disabled>
+                </label>
+                <label>
+                    Draft version
+                    <input id="draftVersion" disabled>
+                </label>
+            </div>
+
+            <label style="margin-top: 14px;">
+                Draft status
+                <input id="draftStatus" disabled>
+            </label>
+
+            <div class="grid two" style="margin-top: 16px;">
+                <label>
+                    Submit authority
+                    <select id="submitAuthority">
+                        <option value="INSPECTOR">INSPECTOR</option>
+                        <option value="SITE_MANAGER">SITE_MANAGER</option>
+                        <option value="AREA_MANAGER">AREA_MANAGER</option>
+                        <option value="OPERATIONS_MANAGER">OPERATIONS_MANAGER</option>
+                    </select>
+                </label>
+                <label>
+                    Manager authority
+                    <select id="managerAuthority">
+                        <option value="SITE_MANAGER">SITE_MANAGER</option>
+                        <option value="AREA_MANAGER">AREA_MANAGER</option>
+                        <option value="OPERATIONS_MANAGER">OPERATIONS_MANAGER</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="actions" style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px;">
+                <button class="button button-primary" type="button" onclick="submitForApproval()">Submit for Approval</button>
+                <button class="button button-secondary" type="button" onclick="approveDraft()">Approve</button>
+                <button class="button button-warning" type="button" onclick="rejectDraft()">Reject</button>
+            </div>
+
+            <div id="approvalNotice" class="notification info" style="display:none; margin-top: 18px;"></div>
+        </section>
+
+        <section class="panel">
+            <div class="section-title">
+                <h2>Live Status</h2>
+                <span class="note">Boundary state, active version, and backend events.</span>
+            </div>
+            <div class="info-card">
+                <strong>Latest active geofence</strong>
+                <div id="latestActiveInfo">Load active boundary for the selected site.</div>
+            </div>
+            <div class="info-card" style="margin-top: 14px;">
+                <strong>Recent history</strong>
+                <div id="historySummary">No history loaded.</div>
+            </div>
+            <div class="notification info" style="margin-top: 18px;">
+                The system keeps the polygon boundary separate from the tolerance band. Inside stays inside, a separate tolerance zone is evaluated as a buffer around the approved boundary.
+            </div>
+        </section>
+    </div>
+
+    <section class="panel" style="margin-top: 24px;">
+        <div class="section-title">
+            <h2>Debug &amp; Activity Log</h2>
+            <span class="note">Inspect API calls, point captures, and warnings.</span>
+        </div>
+        <div id="logPanel" class="log-panel"></div>
+    </section>
+</div>
+
+<script>
+    const DEFAULT_TOLERANCE_METERS = 5;
+    const RETURN_TO_START_METERS = 12;
+
+    const state = {
+        token: '',
+        siteId: null,
+        draft: null,
+        points: [],
+        geoWatchId: null,
+        lastCapturedPosition: null,
+        currentPosition: null,
+        autoCaptureEnabled: false,
+        isMappingActive: false,
+        isPaused: false,
+    };
+
+    const elements = {
+        bearerToken: document.getElementById('bearerToken'),
+            siteSelect: document.getElementById('siteSelect'),
+            siteId: document.getElementById('siteId'),
+            siteName: document.getElementById('siteName'),
+            siteDetailsInfo: document.getElementById('siteDetailsInfo'),
+        siteStatus: document.getElementById('siteStatus'),
+        currentPosition: document.getElementById('currentPosition'),
+        currentAccuracy: document.getElementById('currentAccuracy'),
+        pointCount: document.getElementById('pointCount'),
+        returnToStart: document.getElementById('returnToStart'),
+        mappingStatus: document.getElementById('mappingStatus'),
+        previewSvg: document.getElementById('previewSvg'),
+        draftId: document.getElementById('draftId'),
+        draftVersion: document.getElementById('draftVersion'),
+        draftStatus: document.getElementById('draftStatus'),
+        approvalNotice: document.getElementById('approvalNotice'),
+        latestActiveInfo: document.getElementById('latestActiveInfo'),
+        historySummary: document.getElementById('historySummary'),
+        logPanel: document.getElementById('logPanel'),
+        inspectorRole: document.getElementById('inspectorRole'),
+        submitAuthority: document.getElementById('submitAuthority'),
+        managerAuthority: document.getElementById('managerAuthority'),
+        acceptAccuracy: document.getElementById('acceptAccuracy'),
+        warnAccuracy: document.getElementById('warnAccuracy'),
+        autoCaptureDistance: document.getElementById('autoCaptureDistance'),
+        toleranceMeters: document.getElementById('toleranceMeters'),
+        pauseMappingButton: document.getElementById('pauseMappingButton'),
+        gpsStatus: document.getElementById('gpsStatus'),
+    };
+
+    function log(message, type = 'info') {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        if (type === 'error') {
+            entry.style.color = 'var(--danger)';
+        } else if (type === 'warn') {
+            entry.style.color = 'var(--warn)';
+        }
+        elements.logPanel.prepend(entry);
+    }
+
+    function apiHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            ...(state.token ? { Authorization: `Bearer ${state.token}` } : {}),
+        };
+    }
+
+    function apiFetch(path, options = {}) {
+        return fetch(path, {
+            ...options,
+            headers: {
+                ...apiHeaders(),
+                ...(options.headers || {}),
+            },
+        }).then(async response => {
+            const payload = await response.json().catch(() => null);
+            if (!response.ok) {
+                throw new Error(payload?.message || `${response.status} ${response.statusText}`);
+            }
+            return payload;
+        });
+    }
+
+    async function loadSites() {
+        if (!state.token) {
+            alert('Paste a bearer token before loading sites.');
+            return;
+        }
+
+        try {
+            const payload = await apiFetch('/api/v1/sites', { method: 'GET' });
+            const sites = payload.data || [];
+            elements.siteSelect.innerHTML = '<option value="">Select a site</option>';
+            sites.forEach(site => {
+                const option = document.createElement('option');
+                option.value = site.site_id;
+                option.textContent = `${site.site_name} (${site.status || 'UNKNOWN'})`;
+                elements.siteSelect.appendChild(option);
+            });
+            elements.siteDetailsInfo.innerHTML = `<strong>Loaded ${sites.length} sites</strong>`;
+            elements.siteDetailsInfo.style.display = 'block';
+            log(`Loaded ${sites.length} sites from the backend.`);
+        } catch (error) {
+            elements.siteDetailsInfo.style.display = 'none';
+            log(`Could not load sites: ${error.message}`, 'error');
+            alert(`Could not load sites: ${error.message}`);
+        }
+    }
+
+    async function loadSelectedSite(siteId) {
+        if (!state.token) {
+            return;
+        }
+
+        try {
+            const payload = await apiFetch(`/api/v1/sites/${siteId}`, { method: 'GET' });
+            const site = payload.data || {};
+            elements.siteName.value = site.site_name || '';
+            elements.siteId.value = site.site_id || '';
+            state.siteId = Number(site.site_id || 0);
+            elements.siteDetailsInfo.innerHTML = `
+                <strong>Site details</strong>
+                <p>${site.site_name || 'Unnamed site'}</p>
+                <p>City: ${site.city || 'n/a'}</p>
+                <p>Province: ${site.province || 'n/a'}</p>
+                <p>Status: ${site.status || 'n/a'}</p>
+            `;
+            elements.siteStatus.value = site.status || '';
+            elements.siteDetailsInfo.style.display = 'block';
+            log(`Selected site ${site.site_id}: ${site.site_name}.`);
+            await loadActiveGeofence();
+            await loadSiteHistory();
+        } catch (error) {
+            elements.siteDetailsInfo.style.display = 'none';
+            elements.siteStatus.value = '';
+            log(`Could not load site details: ${error.message}`, 'error');
+            alert(`Could not load site details: ${error.message}`);
+            state.siteId = null;
+            elements.siteId.value = '';
+            elements.siteName.value = '';
+            elements.activeGeofenceInfo.style.display = 'none';
+            elements.siteHistoryInfo.style.display = 'none';
+            elements.latestActiveInfo.textContent = 'Load active boundary for the selected site.';
+            elements.historySummary.textContent = 'No history loaded.';
+        }
+    }
+
+    function updateDraftDisplay() {
+        elements.pointCount.textContent = `${state.points.length} points captured`;
+        elements.mappingStatus.value = state.draft ? state.draft.status : 'Idle';
+        elements.draftId.value = state.draft ? state.draft.geofenceId : '';
+        elements.draftVersion.value = state.draft ? state.draft.version : '';
+        elements.draftStatus.value = state.draft ? state.draft.status : 'None';
+        elements.approvalNotice.style.display = 'none';
+        renderPreview();
+    }
+
+    function updateCurrentPosition(position) {
+        const { latitude, longitude, accuracy } = position.coords;
+        state.currentPosition = { latitude, longitude, accuracy };
+        elements.currentPosition.textContent = `Lat ${latitude.toFixed(6)}, Lon ${longitude.toFixed(6)}`;
+        elements.currentAccuracy.textContent = `Accuracy: ${accuracy.toFixed(1)} m`;
+        const warnLimit = Number(elements.warnAccuracy.value);
+        const acceptLimit = Number(elements.acceptAccuracy.value);
+        if (accuracy > warnLimit) {
+            elements.currentAccuracy.style.color = 'var(--danger)';
+            elements.returnToStart.textContent = 'GPS accuracy too poor to capture points.';
+        } else if (accuracy > acceptLimit) {
+            elements.currentAccuracy.style.color = 'var(--warn)';
+            elements.returnToStart.textContent = 'GPS accuracy is marginal. Consider waiting for a stronger fix.';
+        } else {
+            elements.currentAccuracy.style.color = 'var(--text)';
+            evaluateReturnToStart();
+        }
+
+        if (state.autoCaptureEnabled) {
+            attemptAutoCapture();
+        }
+    }
+
+    function evaluateReturnToStart() {
+        if (state.points.length === 0 || !state.currentPosition) {
+            elements.returnToStart.textContent = 'Return-to-start status will appear here.';
+            return;
+        }
+
+        const distance = haversineDistance(
+            state.points[0].latitude,
+            state.points[0].longitude,
+            state.currentPosition.latitude,
+            state.currentPosition.longitude
+        );
+
+        if (distance <= 5) {
+            elements.returnToStart.textContent = `Returned to start area — ${distance.toFixed(1)} m from origin.`;
+        } else {
+            elements.returnToStart.textContent = `Distance from start: ${distance.toFixed(1)} m.`;
+        }
+    }
+
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+        const toRad = deg => deg * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+            * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return 6371000 * c;
+    }
+
+    async function handleStartMapping() {
+        if (!state.siteId) {
+            alert('Select a site before starting a mapping draft.');
+            return;
+        }
+
+        if (!['ONBOARDING', 'ACTIVE'].includes(elements.siteStatus.value)) {
+            alert('Geofence mapping is only allowed for sites in ONBOARDING or ACTIVE state.');
+            return;
+        }
+
+        if (state.isMappingActive) {
+            alert('Mapping is already active. Pause or finish the current draft before starting a new one.');
+            return;
+        }
+
+        const payload = {
+            siteId: state.siteId,
+            authority: { effectiveRole: elements.inspectorRole.value, scopeType: 'SITE', scopeReferenceId: state.siteId },
+        };
+
+        try {
+            const result = await apiFetch('/api/v1/geofences/start', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            });
+
+            state.draft = { ...result, status: result.status };
+            state.points = [];
+            state.lastCapturedPosition = null;
+            state.isMappingActive = true;
+            state.isPaused = false;
+            elements.pauseMappingButton.disabled = false;
+            elements.pauseMappingButton.classList.remove('button-disabled');
+            elements.mappingStatus.value = result.status;
+            updateGpsStatus('Draft mapping started. Requesting GPS permission...');
+            log(`Draft started for site ${state.siteId}, geofence ${result.geofenceId}.`);
+            updateDraftDisplay();
+            requestGeolocationWatch();
+        } catch (error) {
+            log(`Could not start mapping: ${error.message}`, 'error');
+            alert(`Start mapping failed: ${error.message}`);
+        }
+    }
+
+    function togglePauseMapping() {
+        if (!state.isMappingActive) {
+            return;
+        }
+
+        state.isPaused = !state.isPaused;
+        const label = state.isPaused ? 'Resume Mapping' : 'Pause Mapping';
+        elements.pauseMappingButton.textContent = label;
+        updateGpsStatus(state.isPaused ? 'Mapping paused. GPS updates will not add points.' : 'Mapping resumed. Continue walking to capture points.');
+        log(state.isPaused ? 'Mapping paused.' : 'Mapping resumed.');
+    }
+
+    function requestGeolocationWatch() {
+        if (!navigator.geolocation) {
+            updateGpsStatus('Geolocation is not available in this browser.');
+            log('Geolocation unavailable.', 'error');
+            return;
+        }
+
+        if (state.geoWatchId !== null) {
+            return;
+        }
+
+        state.geoWatchId = navigator.geolocation.watchPosition(
+            position => {
+                updateCurrentPosition(position);
+                if (state.isMappingActive && !state.isPaused) {
+                    attemptAutoCapture();
+                }
+            },
+            error => {
+                updateGpsStatus(`GPS error: ${error.message}`);
+                log(`Geolocation error: ${error.message}`, 'error');
+            },
+            { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+        );
+    }
+
+    function updateGpsStatus(message) {
+        elements.gpsStatus.textContent = message;
+    }
+
+    function shouldCapturePoint(position) {
+        if (!state.currentPosition) {
+            return true;
+        }
+
+        const last = state.lastCapturedPosition || state.points[state.points.length - 1] || null;
+        if (!last) {
+            return true;
+        }
+
+        const distance = haversineDistance(last.latitude, last.longitude, position.latitude, position.longitude);
+        return distance >= Number(elements.autoCaptureDistance.value);
+    }
+
+    function isPointDuplicate(position) {
+        return state.points.some(point => {
+            const distance = haversineDistance(point.latitude, point.longitude, position.latitude, position.longitude);
+            return distance < 1.5;
+        });
+    }
+
+    function validatePointAccuracy(accuracy) {
+        const warnLimit = Number(elements.warnAccuracy.value);
+        return accuracy <= warnLimit;
+    }
+
+    function isPolygonValid(points) {
+        if (points.length < 3) {
+            return false;
+        }
+
+        const first = points[0];
+        const last = points[points.length - 1];
+        const closureDistance = haversineDistance(first.latitude, first.longitude, last.latitude, last.longitude);
+        return closureDistance <= RETURN_TO_START_METERS;
+    }
+
+    function evaluateReturnToStart() {
+        if (state.points.length === 0 || !state.currentPosition) {
+            elements.returnToStart.textContent = 'Return-to-start status will appear here.';
+            return;
+        }
+
+        const distance = haversineDistance(
+            state.points[0].latitude,
+            state.points[0].longitude,
+            state.currentPosition.latitude,
+            state.currentPosition.longitude
+        );
+
+        if (distance <= RETURN_TO_START_METERS) {
+            elements.returnToStart.textContent = `Near start point — ${distance.toFixed(1)} m from origin. Ready to finish.`;
+            updateGpsStatus('You are near the start point. You may finish mapping when the polygon is complete.');
+        } else {
+            elements.returnToStart.textContent = `Distance from start: ${distance.toFixed(1)} m.`;
+        }
+    }
+
+    function addPoint(position) {
+        const point = {
+            latitude: position.latitude,
+            longitude: position.longitude,
+            accuracy: position.accuracy,
+            sequence: state.points.length + 1,
+            capturedAt: new Date().toISOString(),
+        };
+
+        if (isPointDuplicate(point)) {
+            log('Duplicate point ignored: movement below threshold.', 'warn');
+            return;
+        }
+
+        state.points.push(point);
+        state.lastCapturedPosition = point;
+        elements.pointCount.textContent = `${state.points.length} points captured`;
+        log(`Captured point #${state.points.length} at ${point.latitude.toFixed(6)}, ${point.longitude.toFixed(6)} (accuracy ${point.accuracy.toFixed(1)}m).`);
+        evaluateReturnToStart();
+        renderPreview();
+    }
+
+    async function finishMapping() {
+        if (!state.draft) {
+            alert('Please start a draft first.');
+            return;
+        }
+
+        if (state.points.length < 3) {
+            alert('At least 3 points are required to finish the mapping. Walk the site boundary and capture more GPS points.');
+            return;
+        }
+
+        const badAccuracy = state.points.some(point => !validatePointAccuracy(point.accuracy));
+        if (badAccuracy) {
+            alert('One or more captured points have poor GPS accuracy. Improve signal and retry before finishing.');
+            return;
+        }
+
+        if (!isPolygonValid(state.points)) {
+            alert('The captured points do not form a valid polygon. Please walk a complete boundary and capture a closed loop.');
+            return;
+        }
+
+        try {
+            for (let index = 0; index < state.points.length; index++) {
+                const point = state.points[index];
+                const payload = {
+                    latitude: point.latitude,
+                    longitude: point.longitude,
+                    accuracy: point.accuracy,
+                    sequence: index + 1,
+                    capturedAt: point.capturedAt,
+                };
+                await apiFetch(`/api/v1/geofences/${state.draft.geofenceId}/points`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                });
+            }
+
+            const finishResult = await apiFetch(`/api/v1/geofences/${state.draft.geofenceId}/finish`, {
+                method: 'POST',
+                body: JSON.stringify({ toleranceMeters: Number(elements.toleranceMeters.value) || DEFAULT_TOLERANCE_METERS }),
+            });
+            state.draft = { ...state.draft, ...finishResult };
+            state.isMappingActive = false;
+            state.isPaused = false;
+            elements.pauseMappingButton.disabled = true;
+            elements.pauseMappingButton.classList.add('button-disabled');
+            elements.pauseMappingButton.textContent = 'Pause Mapping';
+            updateGpsStatus('Draft finished. Review and submit for approval. The geofence remains in DRAFT state.');
+            updateDraftDisplay();
+            log(`Finished mapping for draft ${state.draft.geofenceId} with tolerance ${elements.toleranceMeters.value}m.`);
+            alert('Mapping finished. Review the draft and submit for approval.');
+        } catch (error) {
+            log(`Finish mapping failed: ${error.message}`, 'error');
+            alert(`Finish mapping failed: ${error.message}`);
+        }
+    }
+
+    function attemptAutoCapture() {
+        if (!state.draft || !state.currentPosition) {
+            return;
+        }
+
+        const minDistance = Number(elements.autoCaptureDistance.value);
+        if (!state.lastCapturedPosition) {
+            addPoint(state.currentPosition);
+            return;
+        }
+
+        const distance = haversineDistance(
+            state.lastCapturedPosition.latitude,
+            state.lastCapturedPosition.longitude,
+            state.currentPosition.latitude,
+            state.currentPosition.longitude
+        );
+
+        if (distance >= minDistance) {
+            addPoint(state.currentPosition);
+        }
+    }
+
+    function capturePoint() {
+        if (!state.draft) {
+            alert('Start a mapping draft first.');
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported in this browser.');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const current = { latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy };
+                state.currentPosition = current;
+                updateCurrentPosition(position);
+
+                if (!validatePointAccuracy(current.accuracy)) {
+                    log(`Point ignored because accuracy ${current.accuracy.toFixed(1)}m is worse than warn threshold ${Number(elements.warnAccuracy.value)}m.`, 'warn');
+                    alert('GPS accuracy is too poor to capture this point. Move to a better location or wait for a stronger signal.');
+                    return;
+                }
+
+                if (!shouldCapturePoint(current)) {
+                    log('Capture skipped because movement is below the configured minimum distance.', 'warn');
+                    alert('You have not moved far enough to capture a new point. Continue around the site perimeter.');
+                    return;
+                }
+
+                addPoint(current);
+            },
+            error => {
+                updateGpsStatus(`GPS error: ${error.message}`);
+                log(`Geolocation error: ${error.message}`, 'error');
+                alert(`Unable to capture point: ${error.message}`);
+            },
+            { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 }
+        );
+    }
+
+    async function submitForApproval() {
+        if (!state.draft) {
+            alert('No draft selected.');
+            return;
+        }
+
+        try {
+            const result = await apiFetch(`/api/v1/geofences/${state.draft.geofenceId}/submit`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    authority: { effectiveRole: elements.submitAuthority.value, scopeType: 'SITE', scopeReferenceId: state.siteId },
+                }),
+            });
+            state.draft = { ...state.draft, ...result };
+            updateDraftDisplay();
+            elements.approvalNotice.textContent = 'Draft submitted for approval.';
+            elements.approvalNotice.className = 'notification success';
+            elements.approvalNotice.style.display = 'block';
+            log(`Draft ${state.draft.geofenceId} submitted for approval by ${elements.submitAuthority.value}.`);
+        } catch (error) {
+            log(`Submit failed: ${error.message}`, 'error');
+            elements.approvalNotice.textContent = `Submit failed: ${error.message}`;
+            elements.approvalNotice.className = 'notification error';
+            elements.approvalNotice.style.display = 'block';
+        }
+    }
+
+    async function approveDraft() {
+        if (!state.draft) {
+            alert('No draft selected.');
+            return;
+        }
+
+        try {
+            const result = await apiFetch(`/api/v1/geofences/${state.draft.geofenceId}/approve`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    authority: { effectiveRole: elements.managerAuthority.value, scopeType: 'SITE', scopeReferenceId: state.siteId },
+                }),
+            });
+            state.draft = { ...state.draft, ...result };
+            updateDraftDisplay();
+            elements.approvalNotice.textContent = 'Geofence approved and activated.';
+            elements.approvalNotice.className = 'notification success';
+            elements.approvalNotice.style.display = 'block';
+            log(`Geofence ${state.draft.geofenceId} approved by ${elements.managerAuthority.value}.`);
+            loadActiveGeofence();
+        } catch (error) {
+            log(`Approve failed: ${error.message}`, 'error');
+            elements.approvalNotice.textContent = `Approve failed: ${error.message}`;
+            elements.approvalNotice.className = 'notification error';
+            elements.approvalNotice.style.display = 'block';
+        }
+    }
+
+    async function rejectDraft() {
+        if (!state.draft) {
+            alert('No draft selected.');
+            return;
+        }
+
+        try {
+            const result = await apiFetch(`/api/v1/geofences/${state.draft.geofenceId}/reject`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    authority: { effectiveRole: elements.managerAuthority.value, scopeType: 'SITE', scopeReferenceId: state.siteId },
+                }),
+            });
+            state.draft = { ...state.draft, ...result };
+            updateDraftDisplay();
+            elements.approvalNotice.textContent = 'Draft rejected and returned to DRAFT state.';
+            elements.approvalNotice.className = 'notification warn';
+            elements.approvalNotice.style.display = 'block';
+            log(`Geofence ${state.draft.geofenceId} rejected by ${elements.managerAuthority.value}.`);
+        } catch (error) {
+            log(`Reject failed: ${error.message}`, 'error');
+            elements.approvalNotice.textContent = `Reject failed: ${error.message}`;
+            elements.approvalNotice.className = 'notification error';
+            elements.approvalNotice.style.display = 'block';
+        }
+    }
+
+    async function loadActiveGeofence() {
+        if (!state.siteId) {
+            alert('Select a site first.');
+            return;
+        }
+
+        const siteId = state.siteId;
+
+        try {
+            const active = await apiFetch(`/api/v1/sites/${siteId}/geofences/active`, { method: 'GET' });
+            const html = `
+                <strong>Active boundary</strong>
+                <p>Status: <span class="status-pill pill-active">${active.status}</span></p>
+                <p>Version: ${active.version}</p>
+                <p>Tolerance: ${active.toleranceMeters}m</p>
+                <p>Points: ${active.points?.length ?? 0}</p>
+            `;
+            elements.activeGeofenceInfo.innerHTML = html;
+            elements.activeGeofenceInfo.style.display = 'block';
+            log(`Loaded active geofence for site ${siteId}.`);
+            updateLatestActiveInfo(active);
+            renderSiteBoundary(active);
+        } catch (error) {
+            log(`Load active geofence failed: ${error.message}`, 'error');
+            elements.activeGeofenceInfo.style.display = 'none';
+            elements.latestActiveInfo.textContent = `Could not load active geofence: ${error.message}`;
+        }
+    }
+
+    async function loadSiteHistory() {
+        if (!state.siteId) {
+            alert('Select a site first.');
+            return;
+        }
+
+        const siteId = state.siteId;
+        try {
+            const payload = await apiFetch(`/api/v1/sites/${siteId}/geofences/history`, { method: 'GET' });
+            const history = payload.history || [];
+            const items = history.map(entry => `Version ${entry.version} — ${entry.status} — Tolerance ${entry.toleranceMeters}m`).join('<br>');
+            elements.siteHistoryInfo.innerHTML = `<strong>History</strong><p>${items || 'No history found for this site.'}</p>`;
+            elements.siteHistoryInfo.style.display = 'block';
+            log(`Loaded history for site ${siteId} (${history.length} versions).`);
+            elements.historySummary.textContent = `${history.length} historical versions loaded.`;
+        } catch (error) {
+            log(`Load history failed: ${error.message}`, 'error');
+            elements.siteHistoryInfo.style.display = 'none';
+            elements.historySummary.textContent = `Load history failed: ${error.message}`;
+        }
+    }
+
+    function updateLatestActiveInfo(active) {
+        elements.latestActiveInfo.innerHTML = `
+            <p>Status: <span class="status-pill pill-active">${active.status}</span></p>
+            <p>Version: ${active.version}</p>
+            <p>Tolerance: ${active.toleranceMeters}m</p>
+            <p>Points: ${active.points?.length ?? 0}</p>
+        `;
+    }
+
+    function renderSiteBoundary(active) {
+        if (!active || !Array.isArray(active.points) || active.points.length === 0) {
+            return;
+        }
+
+        state.points = active.points.map((point, index) => ({
+            latitude: point.latitude,
+            longitude: point.longitude,
+            accuracy: point.accuracy ?? 0,
+            sequence: index + 1,
+            capturedAt: point.capturedAt || new Date().toISOString(),
+        }));
+        elements.pointCount.textContent = `${state.points.length} points captured`;
+        renderPreview();
+    }
+
+    function renderPreview() {
+        const svg = elements.previewSvg;
+        svg.innerHTML = '';
+        const points = state.points;
+        if (points.length === 0) {
+            svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#65756a" font-size="14">No mapping points yet</text>';
+            return;
+        }
+
+        const coords = points.map(pt => [pt.latitude, pt.longitude]);
+        const bounds = coords.reduce((acc, [lat, lon]) => {
+            return {
+                minLat: Math.min(acc.minLat, lat),
+                maxLat: Math.max(acc.maxLat, lat),
+                minLon: Math.min(acc.minLon, lon),
+                maxLon: Math.max(acc.maxLon, lon),
+            };
+        }, { minLat: coords[0][0], maxLat: coords[0][0], minLon: coords[0][1], maxLon: coords[0][1] });
+
+        const padding = 0.01;
+        const minLat = bounds.minLat - padding;
+        const maxLat = bounds.maxLat + padding;
+        const minLon = bounds.minLon - padding;
+        const maxLon = bounds.maxLon + padding;
+        const width = maxLon - minLon || 0.01;
+        const height = maxLat - minLat || 0.01;
+        const scale = 220 / Math.max(width, height);
+        const xOffset = (240 - width * scale) / 2;
+        const yOffset = (240 - height * scale) / 2;
+
+        const mapGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const toleranceCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const firstPoint = points[0];
+        const centerX = xOffset + (firstPoint.longitude - minLon) * scale;
+        const centerY = 240 - (yOffset + (firstPoint.latitude - minLat) * scale);
+        toleranceCircle.setAttribute('cx', String(centerX));
+        toleranceCircle.setAttribute('cy', String(centerY));
+        toleranceCircle.setAttribute('r', String(15));
+        toleranceCircle.setAttribute('fill', 'rgba(29, 112, 83, 0.12)');
+        toleranceCircle.setAttribute('stroke', 'rgba(29, 112, 83, 0.32)');
+        toleranceCircle.setAttribute('stroke-width', '1');
+        mapGroup.appendChild(toleranceCircle);
+
+        const lineString = coords.map(([lat, lon]) => {
+            const x = xOffset + (lon - minLon) * scale;
+            const y = 240 - (yOffset + (lat - minLat) * scale);
+            return `${x},${y}`;
+        }).join(' ');
+
+        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygon.setAttribute('points', lineString);
+        polygon.setAttribute('fill', 'rgba(0, 118, 85, 0.12)');
+        polygon.setAttribute('stroke', '#0f4d3e');
+        polygon.setAttribute('stroke-width', '2');
+        mapGroup.appendChild(polygon);
+
+        coords.forEach(([lat, lon], index) => {
+            const x = xOffset + (lon - minLon) * scale;
+            const y = 240 - (yOffset + (lat - minLat) * scale);
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', String(x));
+            circle.setAttribute('cy', String(y));
+            circle.setAttribute('r', index === 0 ? '5' : '3');
+            circle.setAttribute('fill', index === 0 ? '#145a4a' : '#0f4d3e');
+            mapGroup.appendChild(circle);
+        });
+
+        svg.appendChild(mapGroup);
+    }
+
+    function renderActivePreview(active) {
+        if (!active || !Array.isArray(active.points) || active.points.length === 0) {
+            return;
+        }
+        state.draft = state.draft || {};
+        state.draft.activePreview = active;
+    }
+
+    elements.siteSelect.addEventListener('change', event => {
+        const selectedSiteId = event.target.value;
+        if (!selectedSiteId) {
+            state.siteId = null;
+            elements.siteId.value = '';
+            elements.siteName.value = '';
+            elements.siteDetailsInfo.style.display = 'none';
+            elements.activeGeofenceInfo.style.display = 'none';
+            elements.siteHistoryInfo.style.display = 'none';
+            elements.latestActiveInfo.textContent = 'Load active boundary for the selected site.';
+            elements.historySummary.textContent = 'No history loaded.';
+            state.points = [];
+            renderPreview();
+            return;
+        }
+        loadSelectedSite(selectedSiteId);
+    });
+
+    elements.bearerToken.addEventListener('input', event => {
+        state.token = event.target.value.trim();
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (state.geoWatchId !== null) {
+            navigator.geolocation.clearWatch(state.geoWatchId);
+        }
+    });
+
+    requestAnimationFrame(() => document.body.classList.add('ready'));
+    updateDraftDisplay();
+</script>
+</body>
+</html>
+
+

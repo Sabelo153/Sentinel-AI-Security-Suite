@@ -1,0 +1,128 @@
+[
+  {
+    "id": "accounts_and_access",
+    "title": "Accounts and permissions",
+    "symptom": "Cannot sign in, Forbidden, or missing menus",
+    "remedy": "Check the username, account status, assigned role and subscription. Use the Company Admin account for administration; guard accounts belong in the APK.",
+    "manual": "Sign in with each test role. Viewer must not create records; guard must not read admin records; company records must stay isolated."
+  },
+  {
+    "id": "organisation_and_staffing",
+    "title": "Company, sites and staffing",
+    "symptom": "Missing employees or assignment choices",
+    "remedy": "Create the person, employee and user in that order. Check active site, guard position, authority level and employee assignment.",
+    "manual": "Create a test person and employee; assign an active position at the correct site and verify selectors."
+  },
+  {
+    "id": "shifts_and_attendance",
+    "title": "Shifts and attendance",
+    "symptom": "Empty shifts, clock-in refused, incorrect times",
+    "remedy": "Check employee assignment, shift start/end and device timezone. Refresh the APK after assignment.",
+    "manual": "Assign a current test shift, clock in once, verify duplicate handling and clock out."
+  },
+  {
+    "id": "patrols_and_checkpoints",
+    "title": "Patrols, schedules and checkpoints",
+    "symptom": "Patrol will not start, missing scans or missed patrols",
+    "remedy": "Check active route, site, guard assignment and start window. QR text and NFC UID must exactly match the checkpoint. Check server time and the supervisor attention page.",
+    "manual": "Start a scheduled patrol, scan every checkpoint, finish it; separately let a test window expire and inspect missed and incomplete history."
+  },
+  {
+    "id": "guard_mobile_sync",
+    "title": "Android and offline sync",
+    "symptom": "Cannot reach server, pending queue, duplicate actions",
+    "remedy": "Use the same local network and current APK. Confirm the PC server is running. Keep pending actions; do not clear app data or reinstall until the queue is reconciled.",
+    "manual": "Queue an action offline, reconnect and sync twice. Verify a single server record and visible rejection of invalid actions."
+  },
+  {
+    "id": "devices",
+    "title": "Device custody and sessions",
+    "symptom": "Device unavailable or session cannot start",
+    "remedy": "Check device status, current custody and active session. Close an existing session through the authorised workflow before reassigning.",
+    "manual": "Assign a test device, open and close a session, return it and inspect the audit record."
+  },
+  {
+    "id": "incidents_and_occurrence_book",
+    "title": "Incidents and Occurrence Book",
+    "symptom": "Save fails, wrong status or missing history",
+    "remedy": "Check required fields, site and role. Resolve validation messages; refresh before retrying a conflict. Preserve original entries and use the revision workflow.",
+    "manual": "Create and update test records; verify timestamps, lifecycle restrictions, revisions and audit entries."
+  },
+  {
+    "id": "visitor_vehicle_and_access",
+    "title": "Visitors, vehicles and access",
+    "symptom": "Entry denied, missing visit or departure",
+    "remedy": "Check visitor status, host, site and active visit. Confirm registration and access authorisation.",
+    "manual": "Register a visitor and vehicle, record authorised entry and departure, then verify history."
+  },
+  {
+    "id": "inspections",
+    "title": "Inspections",
+    "symptom": "Checklist or completion fails",
+    "remedy": "Check inspector assignment, required checklist outcomes and corrective actions.",
+    "manual": "Create a test inspection, record findings and required actions, complete it and inspect history."
+  },
+  {
+    "id": "alerts_and_notifications",
+    "title": "Alerts and notifications",
+    "symptom": "Notification not delivered or alert unresolved",
+    "remedy": "Check in-app records separately from external delivery. Confirm provider configuration, recipient settings and delivery status with an authorised administrator. Never paste provider secrets here.",
+    "manual": "Create a test alert, acknowledge/resolve it; test each configured external channel with an approved recipient."
+  },
+  {
+    "id": "reports_and_audit",
+    "title": "Reports and dashboard",
+    "symptom": "Empty report, incorrect totals or missing activity",
+    "remedy": "Check date range, company, timezone and filters. Compare with source records; empty data does not prove a service failure.",
+    "manual": "Create a known test record, verify its report and dashboard counts and audit entry without exposing another company."
+  },
+  {
+    "id": "subscriptions",
+    "title": "Plans and limits",
+    "symptom": "Feature unavailable or account limit reached",
+    "remedy": "Check the company plan, trial expiry and status. Permission and subscription are separate requirements. Do not grant broad roles to bypass an expired plan.",
+    "manual": "Verify the appropriate plan allows intended features and rejects excluded actions."
+  },
+  {
+    "id": "geofencing",
+    "title": "GPS and geofences",
+    "symptom": "Position outside boundary or location unavailable",
+    "remedy": "Check device permission, GPS accuracy, latitude/longitude order and radius in metres. Use Geofences > Check point. Background tracking and automatic boundary entry/exit alerts are not implemented.",
+    "manual": "Test known inside/outside points, then compare a real outdoor device position. Do not treat this as a continuous tracking test."
+  },
+  {
+    "id": "contracts_and_posts",
+    "title": "Contracts and posts",
+    "symptom": "Post or contract missing from a selector",
+    "remedy": "Check site, contract dates and active status; confirm company membership.",
+    "manual": "Create test contract and post records and verify references and date validation."
+  },
+  {
+    "id": "local_ai_guide",
+    "title": "Help and local AI writing",
+    "symptom": "Slow writing response or inaccurate advice",
+    "remedy": "Navigation help uses verified guidance. For writing, check the local model service and configuration; a timeout should give a fallback. Never submit personal data.",
+    "manual": "Ask a navigation question, then a fictional writing question; verify no customer records or actions are accessible."
+  },
+  {
+    "id": "website_and_sessions",
+    "title": "Website and sessions",
+    "symptom": "Menu stuck, blank screen, stale styling or expired login",
+    "remedy": "Refresh the page after saving work. Check browser connectivity. Sign in again after expiry; do not repeatedly retry a permission denial.",
+    "manual": "Check mobile menu open/close, keyboard navigation, form errors, session warning and sign-out."
+  },
+  {
+    "id": "deployment_and_recovery",
+    "title": "Server, backup and recovery",
+    "symptom": "Site offline, disk full or restore needed",
+    "remedy": "Check web/database services, disk space and restricted server logs. Back up before repair. Restore only to an isolated database first. Never expose this local console to the internet.",
+    "manual": "Run a scheduled backup and a verified isolated restore. Test service restart, TLS and monitoring separately before public launch."
+  },
+  {
+    "id": "android_installation",
+    "title": "APK installation and phone hardware",
+    "symptom": "Install warning, QR/NFC/GPS failure",
+    "remedy": "Use the supplied signed build from a trusted source; debug builds are for testing. Record the exact Android warning. Do not disable Play Protect. Confirm camera/location permissions and NFC hardware.",
+    "manual": "On a physical phone test login, camera scan, NFC tag, outdoor GPS, loss of connection and app restart."
+  }
+]

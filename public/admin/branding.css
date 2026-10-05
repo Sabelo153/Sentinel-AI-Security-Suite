@@ -1,0 +1,13 @@
+.login-logo{display:block;width:76px;height:76px;object-fit:contain;margin:0 0 18px}
+.brand-mark{display:block;width:32px;height:32px;object-fit:contain;border-radius:8px}
+.signup-form{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+.signup-form h2{font-size:21px}
+.signup-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.plan-description{margin:0;padding:10px;background:#eef7f8;border-left:3px solid #14b8d4;color:#274c55;font:13px Arial,sans-serif}
+small{color:var(--muted);font:12px Arial,sans-serif}
+.back-home{display:inline-block;margin:-18px 0 22px;color:var(--forest);font:600 13px Arial,sans-serif;text-decoration:none}
+.back-home:hover{text-decoration:underline}
+.signup-consent{grid-template-columns:20px 1fr;align-items:start;gap:9px;line-height:1.45}
+.signup-consent input{width:auto;margin:2px 0 0}
+.signup-consent a{color:var(--forest-dark);font-weight:700}
+@media(max-width:520px){.signup-columns{grid-template-columns:1fr}}

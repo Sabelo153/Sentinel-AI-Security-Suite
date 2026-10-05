@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sentinel\Repositories;
+
+use Sentinel\Core\Database;
+use Sentinel\Core\RuntimeContext;
+
+final class IncidentRepository extends Repository
+{
+    private const COLUMNS = 'incident_id, incident_uuid, company_id, site_id, employee_id, reporter_user_id, shift_assignment_id, patrol_session_id, incident_number, incident_type, incident_category, severity, status, occurred_at, reported_at, description, actions_taken, resolution, closed_at, created_at, updated_at';
+    public function __construct(Database $db, ?RuntimeContext $context = null) { parent::__construct($db, $context); }
+    protected function table(): string { return 'incidents'; }
+    /** @return array<int,array<string,mixed>> */ public function listForCompany(array $filters=[]): array { $where=['company_id=:company_id','deleted_at IS NULL'];$params=['company_id'=>$this->requireCompanyId()];foreach(['site_id','employee_id','status','severity','incident_category','incident_type']as$f)if(isset($filters[$f])){$where[]=$f.'=:'.$f;$params[$f]=$filters[$f];}foreach(['date_from'=>'>=','date_to'=>'<=']as$f=>$operator)if(isset($filters[$f])){$where[]='occurred_at '.$operator.' :'.$f;$params[$f]=$filters[$f];}return$this->db->fetchAll('SELECT '.self::COLUMNS.' FROM incidents WHERE '.implode(' AND ',$where).' ORDER BY occurred_at DESC,incident_id DESC',$params); }
+    /** @return array<string,mixed>|null */ public function findByIdForCompany(string $id):?array{return$this->db->fetch('SELECT '.self::COLUMNS.' FROM incidents WHERE incident_id=:id AND company_id=:company_id AND deleted_at IS NULL LIMIT 1',['id'=>$id,'company_id'=>$this->requireCompanyId()]);}
+    public function siteExists(string $id):bool{return$this->exists('sites','site_id',$id);}public function employeeExists(string $id):bool{return$this->exists('employees','employee_id',$id);}public function userExists(string $id):bool{return$this->exists('users','user_id',$id);}
+    /** @return array<string,mixed>|null */ public function shift(string $id):?array{return$this->db->fetch('SELECT employee_id,site_id FROM shift_assignments WHERE shift_assignment_id=:id AND company_id=:company_id AND deleted_at IS NULL LIMIT 1',['id'=>$id,'company_id'=>$this->requireCompanyId()]);}
+    /** @return array<string,mixed>|null */ public function patrol(string $id):?array{return$this->db->fetch('SELECT ea.employee_id,r.site_id FROM patrol_sessions ps INNER JOIN employee_assignments ea ON ea.employee_assignment_id=ps.employee_assignment_id AND ea.company_id=ps.company_id INNER JOIN patrol_routes r ON r.patrol_route_id=ps.patrol_route_id AND r.company_id=ps.company_id WHERE ps.patrol_session_id=:id AND ps.company_id=:company_id AND ps.deleted_at IS NULL LIMIT 1',['id'=>$id,'company_id'=>$this->requireCompanyId()]);}
+    /** @param array<string,mixed> $data @return array<string,mixed> */ public function createForCompany(array $data):array{$this->db->execute('INSERT INTO incidents (incident_uuid,company_id,site_id,employee_id,reporter_user_id,shift_assignment_id,patrol_session_id,incident_number,incident_type,incident_category,severity,status,occurred_at,reported_at,description,actions_taken,resolution,created_by_user_id,updated_by_user_id,closed_at) VALUES (:incident_uuid,:company_id,:site_id,:employee_id,:reporter_user_id,:shift_assignment_id,:patrol_session_id,:incident_number,:incident_type,:incident_category,:severity,:status,:occurred_at,:reported_at,:description,:actions_taken,:resolution,:created_by_user_id,:updated_by_user_id,:closed_at)',['company_id'=>$this->requireCompanyId(),...$data]);return$this->findByIdForCompany((string)$this->db->connection()->lastInsertId())??throw new \RuntimeException('Created incident could not be loaded.');}
+    /** @param array<string,mixed> $data @return array<string,mixed>|null */ public function updateForCompany(string $id,array $data):?array{$sets=[];$params=['id'=>$id,'company_id'=>$this->requireCompanyId()];foreach(['site_id','employee_id','reporter_user_id','shift_assignment_id','patrol_session_id','incident_type','incident_category','severity','status','occurred_at','reported_at','description','actions_taken','resolution','updated_by_user_id','closed_at']as$f)if(array_key_exists($f,$data)){$sets[]=$f.'=:'.$f;$params[$f]=$data[$f];}if($sets!==[])$this->db->execute('UPDATE incidents SET '.implode(',',$sets).' WHERE incident_id=:id AND company_id=:company_id AND deleted_at IS NULL',$params);return$this->findByIdForCompany($id);}
+    private function exists(string $table,string $column,string $id):bool{return$this->db->fetch('SELECT '.$column.' FROM '.$table.' WHERE '.$column.'=:id AND company_id=:company_id LIMIT 1',['id'=>$id,'company_id'=>$this->requireCompanyId()])!==null;}
+}

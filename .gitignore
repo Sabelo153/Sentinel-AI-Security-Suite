@@ -1,0 +1,129 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Dependencies
+vendor/
+node_modules/
+composer.lock
+package-lock.json
+yarn.lock
+
+# Build artifacts
+/dist/
+/build/
+*.class
+*.jar
+
+# Runtime
+logs/
+*.log
+*.log.*
+
+# Caches
+.cache/
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# PHP
+*.php.bak
+.phpunit.result.cache
+
+# Database
+*.sqlite
+*.sqlite3
+database.db
+
+# Uploads (keep directory, ignore files)
+apps/web/uploads/*
+!apps/web/uploads/.gitkeep
+
+storage/
+uploads/
+
+# Backups
+backups/
+*.backup
+*.bak
+
+# System
+.AppleDouble
+.LSOverride
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Local database backups
+database/backups/*
+!database/backups/.gitkeep
+.tmp-mariadb/
+
+# Android
+.gradle/
+.idea/
+*.iml
+local.properties
+release-signing.properties
+*.jks
+*.keystore
+*.apk
+*.aar
+
+# Node
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Testing
+coverage/
+.nyc_output/
+junit.xml
+
+# Private keys
+*.pem
+*.key
+*.pub
+private/
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# Keep placeholder files
+!.gitkeep
+
+# Public snapshot exclusions
+.env.*
+!.env.example
+.safe-test-mariadb/
+.phpunit.cache/
+database/seed/local/
+# Retain dependency manifests for reproducible installation
+!composer.lock
+!package-lock.json
+!yarn.lock

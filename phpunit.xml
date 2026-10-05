@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         cacheDirectory=".phpunit.cache"
+         failOnRisky="true"
+         failOnWarning="false"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true">
+
+  <!-- Test suites -->
+  <testsuites>
+    <!-- Unit tests: Fast, isolated tests for business logic -->
+    <testsuite name="Unit">
+      <directory>tests/Unit/</directory>
+    </testsuite>
+
+    <!-- Integration tests: Tests with multiple components, still mocked database -->
+    <testsuite name="Integration">
+      <directory>tests/Integration/</directory>
+    </testsuite>
+
+    <!-- Migration tests: Tests that verify database schema changes -->
+    <testsuite name="Migration">
+      <directory>tests/Unit/Migration/</directory>
+    </testsuite>
+
+  </testsuites>
+
+  <!-- Code coverage -->
+  <coverage>
+    <report>
+      <html outputDirectory="storage/reports/coverage/"/>
+      <text outputFile="php://stdout" showUncoveredFiles="false"/>
+    </report>
+  </coverage>
+
+  <!-- PHP Configuration -->
+  <php>
+    <!-- Error reporting -->
+    <ini name="error_reporting" value="-1"/>
+    <ini name="display_errors" value="1"/>
+    <ini name="display_startup_errors" value="1"/>
+    
+    <!-- Timezone -->
+    <ini name="date.timezone" value="UTC"/>
+    
+    <!-- Memory limit for tests -->
+    <ini name="memory_limit" value="512M"/>
+    
+    <!-- Environment for testing -->
+    <env name="APP_ENV" value="testing"/>
+    <env name="APP_DEBUG" value="true"/>
+  </php>
+</phpunit>

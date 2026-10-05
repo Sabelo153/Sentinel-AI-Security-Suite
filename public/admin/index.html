@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinel | Company workspace</title>
+  <link rel="icon" href="/assets/icons/favicon.ico?v=2" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=2">
+  <link rel="manifest" href="/site.webmanifest?v=2">
+  <meta name="theme-color" content="#062342">
+  <link rel="stylesheet" href="admin.css?v=6">
+  <link rel="stylesheet" href="branding.css">
+  <link rel="stylesheet" href="workspace.css?v=1">
+</head>
+<body>
+  <div id="adminProgress" class="admin-progress" aria-hidden="true"></div>
+  <main id="loginView" class="login-shell">
+    <section class="login-panel" aria-labelledby="loginTitle">
+      <img class="login-logo" src="assets/sentinel-logo.png" alt="Sentinel logo">
+      <p class="eyebrow">Sentinel AI Security Suite</p>
+      <h1 id="loginTitle">Welcome back</h1>
+      <a href="/" class="back-home">← Back to Sentinel home</a>
+      <form id="loginForm" class="form-stack">
+        <p class="login-intro">Sign in to manage your team, sites and daily operations.</p>
+        <label>Email or username<input id="identifier" name="identifier" autocomplete="username" required></label>
+        <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit" class="primary">Sign in</button>
+        <button id="openSignup" type="button" class="secondary">Create organisation account</button>
+      </form>
+      <p id="loginMessage" class="message" role="alert"></p>
+      <form id="signupForm" class="form-stack signup-form hidden">
+        <h2>Create your Sentinel account</h2>
+        <label>Plan<select id="signupPlan" name="plan_code" required><option value="FREE">Free — Small security teams</option><option value="ESSENTIAL">Essential — Workforce operations</option><option value="PROFESSIONAL">Professional — Guard operations</option><option value="ENTERPRISE">Enterprise — Complete suite</option></select></label>
+        <label>Billing country or region<select id="signupMarket" data-market-select><option value="ZA">South Africa (ZAR)</option><option value="US">United States (USD)</option><option value="GB">United Kingdom (GBP)</option><option value="EU">European Union (EUR)</option><option value="AU">Australia (AUD)</option><option value="OTHER">Other countries (USD)</option></select></label><p id="planDescription" class="plan-description"></p>
+        <label>Organisation name<input id="signupCompany" name="company_name" maxlength="255" required></label>
+        <label>Main site name<input id="signupSite" name="site_name" maxlength="255" value="Main Site" required></label>
+        <div class="signup-columns"><label>First name<input id="signupFirst" name="first_name" maxlength="100" autocomplete="given-name" required></label><label>Last name<input id="signupLast" name="last_name" maxlength="100" autocomplete="family-name" required></label></div>
+        <label>Email<input id="signupEmail" name="email" type="email" autocomplete="email" required></label>
+        <label>Phone<input id="signupPhone" name="phone" type="tel" autocomplete="tel" placeholder="+27 82 123 4567"></label>
+        <label>Password<input id="signupPassword" name="password" type="password" minlength="12" autocomplete="new-password" required><small>At least 12 characters</small></label>
+        <label class="signup-consent"><input type="checkbox" required> <span>I agree to the <a href="/terms" target="_blank">Terms of Service</a> and acknowledge the <a href="/privacy" target="_blank">Privacy Notice</a>.</span></label>
+        <button type="submit" class="primary">Create account</button>
+        <button id="cancelSignup" type="button" class="secondary">Back to sign in</button>
+        <p id="signupMessage" class="message" role="alert"></p>
+      </form>
+    </section>
+  </main>
+  <div id="appView" class="app hidden">
+    <button id="sidebarBackdrop" class="sidebar-backdrop hidden" type="button" aria-label="Close navigation"></button>
+    <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+      <div class="brand"><img class="brand-mark" src="assets/sentinel-logo.png" alt=""><span>Sentinel<small class="brand-caption">Company workspace</small></span><button id="sidebarClose" class="sidebar-close" type="button" aria-label="Close navigation">&#215;</button></div>
+      <label class="nav-search">Find a page<input id="navSearch" type="search" placeholder="Search navigation" autocomplete="off"></label>
+      <nav id="nav" aria-label="Administration navigation"></nav>
+      <button id="logoutButton" class="nav-logout" type="button">Sign out</button>
+    </aside>
+    <section class="workspace">
+      <header class="topbar"><button id="menuButton" class="icon-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">Menu</button><div><p class="eyebrow" id="breadcrumb">Operations</p><h1 id="pageTitle">Dashboard</h1></div><div id="sessionLabel" class="session-label"></div></header>
+      <div id="notice" class="notice hidden" role="alert"></div>
+      <section id="content" class="content" aria-live="polite"></section>
+    </section>
+  </div>
+  <div id="sessionWarning" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="sessionWarningTitle" aria-describedby="sessionWarningText">
+    <section class="session-warning-card">
+      <div class="session-warning-icon" aria-hidden="true">⌛</div>
+      <p class="eyebrow">Session security</p>
+      <h2 id="sessionWarningTitle">Are you still working?</h2>
+      <p id="sessionWarningText">You will be signed out after two minutes without activity.</p>
+      <p class="session-countdown"><strong id="sessionCountdown">2:00</strong> remaining</p>
+      <div class="session-actions"><button id="continueSession" class="primary" type="button">Stay signed in</button><button id="endSession" class="secondary" type="button">Sign out now</button></div>
+    </section>
+  </div>
+  <template id="loadingTemplate"><div class="loading-state" role="status" aria-label="Loading data"><span class="loading-line wide"></span><span class="loading-line"></span><span class="loading-line short"></span><span class="loading-cards"><i></i><i></i><i></i></span><b>Loading your workspace…</b></div></template>
+  <script src="operations.js?v=4"></script>
+  <script src="/assets/markets.js"></script><script src="signup.js"></script>
+  <script src="patrols.js?v=1"></script>
+  <script src="admin.js?v=9"></script>
+</body>
+</html>
+
+
+
+

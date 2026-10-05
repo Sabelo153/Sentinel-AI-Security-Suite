@@ -1,0 +1,222 @@
+<?php
+
+declare(strict_types=1);
+
+$root = __DIR__;
+$command = $argv[1] ?? 'help';
+$args = array_slice($argv, 2);
+
+function fail(string $message): never
+{
+    fwrite(STDERR, $message . PHP_EOL);
+    exit(1);
+}
+
+function run(string $command): int
+{
+    passthru($command, $exitCode);
+    return $exitCode;
+}
+
+function php(string $script, array $args = []): int
+{
+    $cmd = 'php ' . escapeshellarg($script);
+    if ($args !== []) {
+        $cmd .= ' ' . implode(' ', array_map('escapeshellarg', $args));
+    }
+
+    return run($cmd);
+}
+
+function targetPath(string $root, string $segment, string $name): string
+{
+    return $root . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . $segment . DIRECTORY_SEPARATOR . $name . '.php';
+}
+
+function writeTemplate(string $path, string $namespace, string $className): void
+{
+    if (file_exists($path)) {
+        fail('File already exists: ' . $path);
+    }
+
+    $content = "<?php\n\ndeclare(strict_types=1);\n\nnamespace {$namespace};\n\nfinal class {$className}\n{\n}\n";
+    file_put_contents($path, $content);
+    fwrite(STDOUT, 'Created ' . $path . PHP_EOL);
+}
+
+function removeDir(string $path): void
+{
+    if (!is_dir($path)) {
+        return;
+    }
+
+    $items = scandir($path);
+    if ($items === false) {
+        return;
+    }
+
+    foreach ($items as $item) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+
+        $target = $path . DIRECTORY_SEPARATOR . $item;
+        if (is_dir($target)) {
+            removeDir($target);
+            continue;
+        }
+
+        unlink($target);
+    }
+
+    rmdir($path);
+}
+
+switch ($command) {
+    case 'migrate': {
+        $exit = php($root . '/database/migrations/run_migrations.php', $args);
+        exit($exit);
+    }
+
+    case 'rollback': {
+        $exit = php($root . '/database/migrations/run_migrations.php', array_merge(['--rollback'], $args));
+        exit($exit);
+    }
+
+    case 'seed': {
+        $exit = php($root . '/database/seed/run_seeds.php', $args);
+        exit($exit);
+    }
+
+    case 'serve': {
+        $host = $args[0] ?? '127.0.0.1';
+        $port = $args[1] ?? '8080';
+        $docRoot = $root . '/public';
+        $routerScript = $docRoot . '/router.php';
+        $exit = run('php -S ' . escapeshellarg($host . ':' . $port) . ' -t ' . escapeshellarg($docRoot) . ' ' . escapeshellarg($routerScript));
+        exit($exit);
+    }
+
+    case 'cache:clear': {
+        $cachePath = $root . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'cache';
+        removeDir($cachePath);
+        mkdir($cachePath, 0777, true);
+        fwrite(STDOUT, 'Cache cleared: ' . $cachePath . PHP_EOL);
+        exit(0);
+    }
+
+    case 'config:clear': {
+        fwrite(STDOUT, "Config cache cleared (runtime configuration uses direct file loading).\n");
+        exit(0);
+    }
+
+    case 'route:list': {
+        $app = require $root . '/bootstrap/app.php';
+        $router = $app->router();
+        foreach ($router->securityMetadata() as $route) {
+            foreach ($route['methods'] as $method) {
+                $permission = $route['permission'] === null ? '' : ' [' . $route['permission'] . ']';
+                fwrite(STDOUT, str_pad($method, 8) . $route['path'] . $permission . PHP_EOL);
+            }
+        }
+        exit(0);
+    }
+
+    case 'make:controller': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:controller Name');
+        }
+        writeTemplate(targetPath($root, 'Controllers', $class), 'Sentinel\\Controllers', $class);
+        exit(0);
+    }
+
+    case 'make:service': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:service Name');
+        }
+        writeTemplate(targetPath($root, 'Services', $class), 'Sentinel\\Services', $class);
+        exit(0);
+    }
+
+    case 'make:repository': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:repository Name');
+        }
+        writeTemplate(targetPath($root, 'Repositories', $class), 'Sentinel\\Repositories', $class);
+        exit(0);
+    }
+
+    case 'make:model': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:model Name');
+        }
+        writeTemplate(targetPath($root, 'Models', $class), 'Sentinel\\Models', $class);
+        exit(0);
+    }
+
+    case 'make:middleware': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:middleware Name');
+        }
+        writeTemplate(targetPath($root, 'Middleware', $class), 'Sentinel\\Middleware', $class);
+        exit(0);
+    }
+
+    case 'make:event': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:event Name');
+        }
+        writeTemplate(targetPath($root, 'Events', $class), 'Sentinel\\Events', $class);
+        exit(0);
+    }
+
+    case 'make:rule': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:rule Name');
+        }
+        writeTemplate(targetPath($root, 'Rules', $class), 'Sentinel\\Rules', $class);
+        exit(0);
+    }
+
+    case 'make:test': {
+        $class = $args[0] ?? null;
+        if ($class === null) {
+            fail('Usage: php sentinel make:test Name');
+        }
+        $path = $root . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $class . '.php';
+        if (file_exists($path)) {
+            fail('File already exists: ' . $path);
+        }
+        $content = "<?php\n\ndeclare(strict_types=1);\n\nfinal class {$class}\n{\n}\n";
+        file_put_contents($path, $content);
+        fwrite(STDOUT, 'Created ' . $path . PHP_EOL);
+        exit(0);
+    }
+
+    default:
+        fwrite(STDOUT, "Sentinel CLI\n");
+        fwrite(STDOUT, "Usage:\n");
+        fwrite(STDOUT, "  php sentinel migrate [--env=development]\n");
+        fwrite(STDOUT, "  php sentinel rollback\n");
+        fwrite(STDOUT, "  php sentinel seed [--profile=development]\n");
+        fwrite(STDOUT, "  php sentinel serve [host] [port]\n");
+        fwrite(STDOUT, "  php sentinel cache:clear\n");
+        fwrite(STDOUT, "  php sentinel config:clear\n");
+        fwrite(STDOUT, "  php sentinel route:list\n");
+        fwrite(STDOUT, "  php sentinel make:controller Name\n");
+        fwrite(STDOUT, "  php sentinel make:service Name\n");
+        fwrite(STDOUT, "  php sentinel make:repository Name\n");
+        fwrite(STDOUT, "  php sentinel make:model Name\n");
+        fwrite(STDOUT, "  php sentinel make:middleware Name\n");
+        fwrite(STDOUT, "  php sentinel make:event Name\n");
+        fwrite(STDOUT, "  php sentinel make:rule Name\n");
+        fwrite(STDOUT, "  php sentinel make:test Name\n");
+        exit(0);
+}
