@@ -2,6 +2,8 @@
 
 A security operations development project by **Sabelo Andile Biyela**, based in Durban, South Africa.
 
+**[Live project website](https://sabelo153.github.io/Sentinel-AI-Security-Suite/)** — interactive sample tour hosted on GitHub Pages. Login and operational records require separate server hosting.
+
 ## Project status
 This repository is a source snapshot of work in development. Features, architecture plans and verification notes are documented in the codebase; they are not a claim of a completed commercial product or a production security certification. The AI name describes the project's direction, not a measured detection-accuracy claim.
 
