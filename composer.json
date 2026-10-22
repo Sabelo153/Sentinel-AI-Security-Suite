@@ -38,9 +38,6 @@
     "test": "phpunit",
     "test:unit": "phpunit tests/Unit/",
     "test:integration": "phpunit tests/Integration/",
-    "test:migration": "phpunit tests/Unit/Migration/",
-    "test:e2e": "phpunit tests/Integration/GuardShiftEndToEndTest.php",
-    "test:presence": "phpunit tests/Integration/DevicePresenceIntegrationTest.php",
     "test:coverage": "phpunit --coverage-html storage/reports/coverage/"
   }
 }
