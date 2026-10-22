@@ -22,7 +22,7 @@ PHP 8.2+, MySQL/MariaDB, HTML, CSS, JavaScript, Kotlin/Android and Composer.
 2. Run `composer install`.
 3. Copy `.env.example` to `.env`, then configure your local database and generate your own application/JWT/encryption keys.
 4. Review migrations and seed profiles before running `php sentinel migrate` against an empty development database.
-5. Run `php sentinel serve 127.0.0.1 8080` and `php sentinel serve:api 127.0.0.1 8091`.
+5. Run `php sentinel serve 127.0.0.1 8080`. The same application serves the web interface and API routes; there is no separate `serve:api` command.
 
 See [Setup guide](SETUP_GUIDE.md), [framework documentation](docs/ORIGINAL_PROJECT_README.md), and [Android client](apps/guard-android/README.md) for further details. Development seed data and verification scripts are for isolated test environments only.
 
