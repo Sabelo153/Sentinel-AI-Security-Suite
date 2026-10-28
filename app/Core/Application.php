@@ -131,6 +131,10 @@ final class Application
             ),
         );
 
+        $this->container->singleton('support_workspace_service', static fn (Container $c): \Sentinel\Services\SupportWorkspaceService => new \Sentinel\Services\SupportWorkspaceService(
+            $c->make(self::SERVICE_DATABASE), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_AUDIT),
+        ));
+
         $this->container->singleton(
             self::SERVICE_RUNTIME_CONTEXT,
             static fn (Container $c): RuntimeContext => new RuntimeContext(

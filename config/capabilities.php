@@ -9,5 +9,6 @@ return [
         'PROFESSIONAL' => ['core_records', 'people', 'users', 'roles', 'workforce', 'reports', 'guard_operations', 'devices', 'gps'],
         'ENTERPRISE' => ['*'],
     ],
+    'support' => ['view' => 'Tenant diagnostics and sanitised export', 'manage' => 'Audited compromised-account containment'],
     'policy_class' => Sentinel\Services\SubscriptionPolicy::class,
 ];

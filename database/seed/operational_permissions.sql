@@ -201,6 +201,10 @@ SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS ac
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
 UNION ALL
+SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
+UNION ALL
 SELECT 'users.view' AS permission_code, 'users' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'vehicles.create' AS permission_code, 'vehicles' AS module_name, 'create' AS action_name
@@ -423,6 +427,10 @@ UNION ALL
 SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS action_name
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
+UNION ALL
+SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'users.view' AS permission_code, 'users' AS module_name, 'view' AS action_name
 UNION ALL

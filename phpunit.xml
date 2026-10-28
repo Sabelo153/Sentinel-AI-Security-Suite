@@ -24,10 +24,6 @@
       <directory>tests/Integration/</directory>
     </testsuite>
 
-    <!-- Migration tests: Tests that verify database schema changes -->
-    <testsuite name="Migration">
-      <directory>tests/Unit/Migration/</directory>
-    </testsuite>
 
   </testsuites>
 

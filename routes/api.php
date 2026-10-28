@@ -8,6 +8,17 @@ use Sentinel\Core\Request;
 use Sentinel\Core\Router;
 
 return static function (Router $router, Container $container): void {
+    $router->get('/api/v1/support/overview', static fn (): Response => Response::json(['data' => $container->make('support_workspace_service')->overview()])->withHeader('Cache-Control', 'no-store'), ['auth'=>true, 'tenant'=>true, 'permission'=>'support.view']);
+    $router->get('/api/v1/support/health', static function () use ($container): Response {
+        $report = $container->make('support_diagnostics_service')->report();
+        // Tenant support sees component states, never global schema details.
+        $report['checks'] = array_map(static fn (array $check): array => ['status' => $check['status']], $report['checks']);
+        return Response::json(['data' => $report])->withHeader('Cache-Control', 'no-store');
+    }, ['auth'=>true, 'tenant'=>true, 'permission'=>'support.view']);
+    $router->get('/api/v1/support/bundle', static fn (): Response => Response::json(['data' => $container->make('support_workspace_service')->export()])->withHeader('Cache-Control', 'no-store'), ['auth'=>true, 'tenant'=>true, 'permission'=>'support.view']);
+    $router->post('/api/v1/support/accounts/{userId}/disable', static function (Request $request, array $params) use ($container): Response {
+        return Response::json(['data' => $container->make('support_workspace_service')->disableAccount((string)$params['userId'], $request->json())])->withHeader('Cache-Control', 'no-store');
+    }, ['auth'=>true, 'tenant'=>true, 'permission'=>'support.manage']);
 	// Liveness never touches a dependency. It is safe for a load balancer to poll.
 	$router->get('/healthz', static fn (): Response => Response::json(['status' => 'ok', 'service' => 'sentinel']));
 	// Readiness verifies the runtime database without exposing its host, schema,
