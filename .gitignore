@@ -130,3 +130,4 @@ database/seed/local/
 # Signed APK distribution packages are generated outside source history.
 public/downloads/*.apk
 public/downloads/guard-release.json
+.kotlin/
