@@ -27,11 +27,11 @@ final class SubscriptionPolicy
         if ($plan === 'ENTERPRISE') return true;
         if ($permission === 'users.password_change') return true;
         // Recovery access is still explicitly controlled by RBAC on every plan.
-        if (in_array($permission, ['support.view', 'support.manage'], true)) return self::isKnownPlan($plan);
+        if (in_array($permission, ['support.view', 'support.manage', 'support.delegated_view', 'client_portal.read'], true)) return self::isKnownPlan($plan);
         $module = explode('.', $permission, 2)[0];
         $free = ['occurrence_book', 'sites', 'dashboard', 'subscriptions', 'incidents', 'visitors', 'vehicles', 'visitor_visits', 'access_events', 'inspections', 'alerts', 'notifications', 'people', 'employees', 'users', 'roles', 'permissions'];
-        $essential = [...$free, 'clients', 'branches', 'departments', 'positions', 'employee_assignments', 'guard_site_assignments', 'posts', 'contracts', 'guards', 'shift_assignments', 'attendance', 'reports'];
-        $professional = [...$essential, 'guard', 'patrol_routes', 'patrol_checkpoints', 'patrol_sessions', 'devices', 'device_assignments', 'device_sessions', 'locations', 'gps_locations', 'gps_events', 'geofences', 'supervisor'];
+        $essential = [...$free, 'compliance', 'equipment', 'client_portal', 'payroll_export', 'clients', 'branches', 'departments', 'positions', 'employee_assignments', 'guard_site_assignments', 'posts', 'contracts', 'guards', 'shift_assignments', 'attendance', 'reports'];
+        $professional = [...$essential, 'managed_android', 'escalations', 'guard', 'patrol_routes', 'patrol_checkpoints', 'patrol_sessions', 'devices', 'device_assignments', 'device_sessions', 'locations', 'gps_locations', 'gps_events', 'geofences', 'supervisor'];
         return in_array($module, match ($plan) {'FREE' => $free, 'ESSENTIAL' => $essential, 'PROFESSIONAL' => $professional, default => []}, true);
     }
 }

@@ -17,6 +17,9 @@ final class RuntimeContext
 {
     private ?Request $request = null;
     private mixed $user = null;
+    private bool $mfaVerified = false;
+    public function setMfaVerified(bool $value):void { $this->mfaVerified=$value; }
+    public function mfaVerified():bool { return $this->mfaVerified; }
     private ?int $tenantId = null;
     private string $requestId;
     private readonly string $environment;
@@ -91,6 +94,7 @@ final class RuntimeContext
      */
     public function reset(): void
     {
+        $this->mfaVerified = false;
         $this->request = null;
         $this->user = null;
         $this->tenantId = null;

@@ -8,6 +8,15 @@ use Sentinel\Core\Request;
 use Sentinel\Core\Router;
 
 return static function (Router $router, Container $container): void {
+    (require __DIR__.'/field.php')($router,$container);
+    // Installation credential authenticates this endpoint; no customer records returned.
+    // Apply edge rate limits. Never log request bodies on this credential endpoint.
+    $router->post('/api/v1/managed-device/policy', static fn (Request $request): Response => Response::json(['data'=>$container->make('managed_android_service')->poll($request->json())])->withHeader('Cache-Control','no-store'));
+    $router->post('/api/v1/guard/managed/enroll', static fn (Request $request): Response => Response::json(['data'=>$container->make('managed_android_service')->enroll($request->json())])->withHeader('Cache-Control','no-store'), ['auth'=>true,'tenant'=>true,'permission'=>'guard.self']);
+    $router->get('/api/v1/managed-android', static fn (): Response => Response::json(['data'=>$container->make('managed_android_service')->list()])->withHeader('Cache-Control','no-store'), ['auth'=>true,'tenant'=>true,'permission'=>'managed_android.view']);
+    $router->post('/api/v1/managed-android', static fn (Request $request): Response => Response::json(['data'=>$container->make('managed_android_service')->create($request->json())],201)->withHeader('Cache-Control','no-store'), ['auth'=>true,'tenant'=>true,'permission'=>'managed_android.manage']);
+    $router->post('/api/v1/managed-android/{id}/policy', static fn (Request $request,array $params): Response => Response::json(['data'=>$container->make('managed_android_service')->policy((string)$params['id'],$request->json())])->withHeader('Cache-Control','no-store'), ['auth'=>true,'tenant'=>true,'permission'=>'managed_android.manage']);
+    $router->post('/api/v1/managed-android/{id}/replace-enrollment', static fn (Request $request,array $params): Response => Response::json(['data'=>$container->make('managed_android_service')->replaceEnrollment((string)$params['id'],$request->json())])->withHeader('Cache-Control','no-store'), ['auth'=>true,'tenant'=>true,'permission'=>'managed_android.manage']);
     $router->get('/api/v1/support/overview', static fn (): Response => Response::json(['data' => $container->make('support_workspace_service')->overview()])->withHeader('Cache-Control', 'no-store'), ['auth'=>true, 'tenant'=>true, 'permission'=>'support.view']);
     $router->get('/api/v1/support/health', static function () use ($container): Response {
         $report = $container->make('support_diagnostics_service')->report();
@@ -44,7 +53,10 @@ return static function (Router $router, Container $container): void {
 			throw \Sentinel\Core\HttpException::badRequest('Identifier and password are required.', 'invalid_login_request');
 		}
 
-		return Response::json(['data' => ['token' => $container->make('login_service')->login($identifier, $password)]]);
+		$code = $input['code'] ?? '';
+        $label=$input['session_label']??'API';
+        if (!is_string($code)||!is_string($label)||mb_strlen($label)>100) throw \Sentinel\Core\HttpException::badRequest('Invalid authenticator code or session label.');
+		return Response::json(['data' => ['token' => $container->make('login_service')->login($identifier, $password, $code, $label)]]);
 	});
     // Only this caller's effective access; the usual route checks remain authoritative.
     $router->get('/api/v1/auth/access', static function () use ($container, $router): Response {
@@ -75,6 +87,7 @@ return static function (Router $router, Container $container): void {
 	$router->post('/api/v1/auth/password', static function (Request $request) use ($container): Response {
 		$context = $container->make('runtime_context');
 		$container->make('account_security_service')->changePassword((string) $context->user(), (string) ($request->json()['current_password'] ?? ''), (string) ($request->json()['new_password'] ?? ''));
+        $container->make('session_security_service')->revokeUserSessions((string)$context->user());
 		return Response::json(['data' => ['updated' => true]]);
 	}, ['auth' => true, 'tenant' => true, 'permission' => 'users.password_change']);
 	$router->get('/api/v1/auth/permission-test', static function (): Response {

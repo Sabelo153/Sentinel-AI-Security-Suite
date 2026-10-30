@@ -26,6 +26,7 @@
         <p class="login-intro">Sign in to manage your team, sites and daily operations.</p>
         <label>Email or username<input id="identifier" name="identifier" autocomplete="username" required></label>
         <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+        <label>Authenticator or recovery code (if enabled)<input id="authenticatorCode" name="code" pattern="[0-9]{6}|[a-fA-F0-9]{16}" autocomplete="one-time-code"></label>
         <button type="submit" class="primary">Sign in</button>
         <button id="openSignup" type="button" class="secondary">Create organisation account</button>
       </form>
@@ -53,6 +54,7 @@
       <div class="brand"><img class="brand-mark" src="assets/sentinel-logo.png" alt=""><span>Sentinel<small class="brand-caption">Company workspace</small></span><button id="sidebarClose" class="sidebar-close" type="button" aria-label="Close navigation">&#215;</button></div>
       <label class="nav-search">Find a page<input id="navSearch" type="search" placeholder="Search navigation" autocomplete="off"></label>
       <nav id="nav" aria-label="Administration navigation"></nav>
+      <a class="nav-item" href="/downloads" target="_blank" rel="noopener">Install / update Android APK</a>
       <button id="logoutButton" class="nav-logout" type="button">Sign out</button>
     </aside>
     <section class="workspace">
@@ -76,7 +78,8 @@
   <script src="/assets/markets.js"></script><script src="signup.js"></script>
   <script src="patrols.js?v=1"></script>
   <script src="support-workspace.js?v=1"></script>
-  <script src="admin.js?v=10"></script>
+  <script src="release-workspace.js?v=1"></script>
+  <script src="admin.js?v=11"></script>
 </body>
 </html>
 

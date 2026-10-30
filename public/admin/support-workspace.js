@@ -36,7 +36,7 @@ window.SentinelSupport = {
             if (current !== generation) return;
             health.replaceChildren(node('h2', 'Server diagnostics'), table(Object.entries(payload.data.checks).map(([component, check]) => ({component, status:check.status}))));
           }).catch(e => { if(current === generation) health.replaceChildren(node('h2', 'Server diagnostics'), node('p', e.message)); });
-          const names = {devices:'Device last contact', sessions:'Active device sessions and affected sites', sync:'Server sync receipts', timeline:'Recent support actions'};
+          const names = {devices:'Device last contact', sessions:'Active device sessions and affected sites', sync:'Server sync receipts', mobile_diagnostics:'Last uploaded phone diagnostics', timeline:'Recent support actions'};
           for (const [name, section] of Object.entries(report.sections)) {
             const card = node('section', '', 'section'); card.append(node('h2', names[name]));
             if (section.status !== 'ready') card.append(node('p', 'Data unavailable. Check server diagnostics; do not interpret missing data as a healthy site.'));

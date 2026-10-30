@@ -28,6 +28,7 @@ return static function (Router $router, Container $container): void {
 	$router->get('/security', static fn (): Response => $page('security.html'));
 	$router->get('/terms', static fn (): Response => $page('terms.html'));
 	$router->get('/privacy', static fn (): Response => $page('privacy.html'));
+    $router->get('/downloads', static fn (): Response => $page('downloads.html'));
 
 	$localSupportOnly = static function (Request $request) use ($container): void {
 		$enabled = (bool) $container->make('config')->get('support.diagnostics_enabled', false);

@@ -24,6 +24,7 @@ final class SupportWorkspaceService
             'devices' => "SELECT device_id, device_name, device_status, last_seen_at FROM devices WHERE company_id=:company AND deleted_at IS NULL ORDER BY device_id DESC LIMIT 201",
             'sessions' => "SELECT ds.device_session_id, ds.device_id, ds.employee_id, ds.site_id, s.site_name, ds.last_seen_at, ds.started_at FROM device_sessions ds LEFT JOIN sites s ON s.site_id=ds.site_id AND s.company_id=ds.company_id WHERE ds.company_id=:company AND ds.session_status='ACTIVE' ORDER BY ds.device_session_id DESC LIMIT 201",
             'sync' => "SELECT user_id, MAX(created_at) AS last_received_at, COUNT(*) AS receipt_count, SUM(CASE WHEN response_json IS NULL THEN 1 ELSE 0 END) AS incomplete_receipts FROM mobile_operations WHERE company_id=:company GROUP BY user_id ORDER BY last_received_at DESC LIMIT 201",
+            'mobile_diagnostics' => "SELECT user_id,installation_id,app_version,pending_count,blocked_count,network_state,received_at FROM mobile_diagnostics WHERE company_id=:company ORDER BY received_at DESC LIMIT 201",
             'timeline' => "SELECT audit_log_id, user_id, entity_name, entity_id, action_name, action_status, occurred_at FROM audit_logs WHERE company_id=:company AND entity_name='support' ORDER BY audit_log_id DESC LIMIT 101",
         ];
         foreach ($queries as $name => $sql) {
@@ -50,7 +51,7 @@ final class SupportWorkspaceService
             'limits' => [
                 'Last contact is evidence of server contact, not proof of guard safety or current connectivity.',
                 'Device-only queued and rejected commands cannot be inspected here. Never clear app data to fix a queue.',
-                'Sync receipts confirm server processing only. No pending-count, app-version or live battery claim is available.',
+                'Sync receipts confirm server processing only. Uploaded diagnostics are last-known snapshots, not a live connection or battery feed.',
                 'This console does not dispatch emergency assistance. Use site radio/phone procedures.',
             ],
         ];

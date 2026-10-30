@@ -18,8 +18,9 @@ if (releaseRequested) {
 android {
     namespace = "com.sentinel.guard"
     compileSdk = 37
+    buildToolsVersion = "37.0.0"
     defaultConfig {
-        applicationId = "com.sentinel.guard"; minSdk = 26; targetSdk = 37; versionCode = 14; versionName = "0.6.4"
+        applicationId = "com.sentinel.guard"; minSdk = 26; targetSdk = 37; versionCode = 15; versionName = "0.7.0"
         buildConfigField("String","SENTINEL_SERVER_URL",buildString(sentinelServerUrl))
         buildConfigField("String","SENTINEL_SIGNUP_URL",buildString(sentinelSignupUrl))
         manifestPlaceholders["allowCleartextTraffic"] = "false"
@@ -44,8 +45,6 @@ android {
     lint { abortOnError = true }
 }
 dependencies {
-    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
-    // Bundled QR model keeps checkpoint scanning available without Google Play services or network access.
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("com.google.zxing:core:3.5.4")
     testImplementation("junit:junit:4.13.2")
 }

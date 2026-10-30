@@ -124,5 +124,61 @@
     "symptom": "Install warning, QR/NFC/GPS failure",
     "remedy": "Use the supplied signed build from a trusted source; debug builds are for testing. Record the exact Android warning. Do not disable Play Protect. Confirm camera/location permissions and NFC hardware.",
     "manual": "On a physical phone test login, camera scan, NFC tag, outdoor GPS, loss of connection and app restart."
+  },
+  {
+    "id": "account_security",
+    "title": "MFA and login sessions",
+    "symptom": "Authenticator code rejected or session revoked",
+    "remedy": "Use a fresh code, check phone time, or use one single-use recovery code. Review Account security; support and device-policy management require an MFA-authenticated session.",
+    "manual": "Enable MFA on a disposable account. Reject replayed codes; revoke one session and verify another stays active."
+  },
+  {
+    "id": "managed_android",
+    "title": "Managed Android and kiosk recovery",
+    "symptom": "Apps or notification shade not restricted",
+    "remedy": "Confirm company-owned device-owner provisioning and enrollment. Compare saved and reported revisions. APPLIED is a device report, not attestation. Use the securely stored per-device recovery code offline if needed.",
+    "manual": "Test a managed physical phone, an ordinary unmanaged phone, approved/unapproved apps, notification shade, reboot, offline recovery and remote release."
+  },
+  {
+    "id": "compliance",
+    "title": "Compliance reminders",
+    "symptom": "Expired requirement or missing verification",
+    "remedy": "Review evidence, correct the renewal date and record manual verification. Check escalation-worker health. This does not automatically verify PSiRA registration.",
+    "manual": "Create a due requirement, verify it, renew it and confirm verification resets for a new evidence review."
+  },
+  {
+    "id": "equipment_handovers",
+    "title": "Equipment issue and return",
+    "symptom": "Equipment already issued or custody disputed",
+    "remedy": "Review open handovers and physical custody before returning an item. Record condition accurately; do not create a second issue to bypass an open handover.",
+    "manual": "Issue and return a test radio; reject double issue and double return; verify company isolation."
+  },
+  {
+    "id": "client_portal",
+    "title": "Approved client reports",
+    "symptom": "Client cannot see a published report",
+    "remedy": "Check the same-company user/client mapping, client_portal.read permission and the site client ID. Publish only reviewed client-appropriate content.",
+    "manual": "Map two separate client accounts and verify neither can read the other client reports or internal incident records."
+  },
+  {
+    "id": "payroll_approvals",
+    "title": "Approved attendance export",
+    "symptom": "Attendance absent from payroll export",
+    "remedy": "Complete and review attendance, approve it, then use the correct date range. Corrections invalidate earlier approvals. Exported hours do not calculate wages or overtime.",
+    "manual": "Approve attendance, export hours, change a timestamp and verify the stale approval is excluded until reviewed again."
+  },
+  {
+    "id": "escalation_worker",
+    "title": "Automatic in-app escalation",
+    "symptom": "No attention notification or backup escalation",
+    "remedy": "Check active rules, recipient accounts, worker schedule and worker exit status. Delivery is in-app only; no SMS, email or WhatsApp provider is connected.",
+    "manual": "Trigger a missed shift or due compliance item; run the worker twice and verify one event, acknowledgement and backup escalation behaviour."
+  },
+  {
+    "id": "mobile_reports_and_diagnostics",
+    "title": "Mobile reports, photos and diagnostic snapshots",
+    "symptom": "Queued report blocked or phone diagnostics stale",
+    "remedy": "Keep the encrypted queue. Review the HTTP status and supervisor reference, fix the account/site problem, then retry unchanged. Uploaded diagnostics show last receipt time; offline records cannot be pulled remotely.",
+    "manual": "Queue a report/photo offline, retry after interrupted delivery and verify exactly one record; reject invalid images and wrong-company shifts."
   }
 ]

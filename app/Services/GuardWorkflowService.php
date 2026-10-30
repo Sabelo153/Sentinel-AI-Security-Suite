@@ -46,7 +46,7 @@ final class GuardWorkflowService
     {
         $this->allowed($input,['operation_uuid','action','data']);
         if(!is_string($input['operation_uuid']??null)||preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/Di',$input['operation_uuid'])!==1)throw HttpException::unprocessable('A stable operation UUID is required.');
-        if(!is_array($input['data']??null)||!in_array($input['action']??null,['clock_in','clock_out','start_patrol','finish_patrol','checkpoint','location'],true))throw HttpException::unprocessable('Invalid guard command.');
+        if(!is_array($input['data']??null)||!in_array($input['action']??null,['clock_in','clock_out','start_patrol','finish_patrol','checkpoint','location','incident','occurrence'],true))throw HttpException::unprocessable('Invalid guard command.');
         $data=$input['data'];ksort($data);$hash=hash('sha256',json_encode([$input['action'],$data],JSON_THROW_ON_ERROR));
         return $this->safe(function()use($input,$data,$hash):array{
             $owns=!$this->db->inTransaction();if($owns)$this->db->beginTransaction();
@@ -71,6 +71,29 @@ final class GuardWorkflowService
     private function execute(string $action,array $data,array $actor):array
     {
         $employee=(string)$actor['employee_id'];$company=$this->context->requireTenant();
+        if(in_array($action,['incident','occurrence'],true)){
+            $this->allowed($data,['shift_assignment_id','occurred_at','text','severity','photo_base64']);
+            $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);
+            if($shift['assignment_status']==='CANCELLED')throw HttpException::conflict('Cannot report against a cancelled shift.');
+            $at=$this->date($data['occurred_at']??null);
+            if(!is_string($data['text']??null)||trim($data['text'])===''||mb_strlen($data['text'])>10000)throw HttpException::unprocessable('Report text is required (maximum 10000 characters).');
+            $photo=$data['photo_base64']??null;
+            if($photo!==null){
+                if(!is_string($photo)||strlen($photo)>280000)throw HttpException::unprocessable('Photo is too large.');
+                $bytes=base64_decode($photo,true);$size=$bytes===false?false:@getimagesizefromstring($bytes);
+                if($size===false||$size[2]!==IMAGETYPE_JPEG||strlen($bytes)>200000||$size[0]>4096||$size[1]>4096)throw HttpException::unprocessable('Photo must be a JPEG below 200 KB and 4096 pixels.');
+            }
+            if($action==='incident'){
+                $row=$this->services->make('incident_management_service')->createIncident(['site_id'=>$shift['site_id'],'employee_id'=>$employee,'reporter_user_id'=>$actor['user_id'],'shift_assignment_id'=>$shift['shift_assignment_id'],'incident_type'=>'GUARD_REPORT','incident_category'=>'FIELD','severity'=>$data['severity']??'MEDIUM','occurred_at'=>$at,'reported_at'=>gmdate('Y-m-d H:i:s'),'description'=>$data['text']]);
+                $id=(string)$row['incident_id'];
+            }else{
+                $row=$this->services->make('occurrence_book_service')->createEntry(['site_id'=>$shift['site_id'],'employee_id'=>$employee,'shift_assignment_id'=>$shift['shift_assignment_id'],'entry_type'=>'GUARD_HANDOVER','occurred_at'=>$at,'entry_text'=>$data['text'],'handover_required'=>true]);
+                $id=(string)$row['occurrence_entry_id'];
+            }
+            if($photo!==null)$this->db->execute('INSERT INTO report_photos (company_id,report_type,report_id,image_base64,created_by_user_id) VALUES (:company,:type,:id,:image,:actor)',['company'=>$company,'type'=>$action,'id'=>$id,'image'=>$photo,'actor'=>$actor['user_id']]);
+            $this->services->make('audit_service')->record($action,'mobile_report_created',$id);
+            return ['report_type'=>$action,'report_id'=>$id,'photo_attached'=>$photo!==null];
+        }
         if($action==='clock_in'){
             $this->allowed($data,['shift_assignment_id','occurred_at']);$at=$this->date($data['occurred_at']??null);
             $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);

@@ -28,7 +28,7 @@ final class SupportWorkspaceTest extends TestCase
         $jwt=new JwtService(new Config(['jwt'=>['algorithm'=>'HS256','secret'=>'support-test-secret-longer-than-thirty-two-characters','issuer'=>'support-tests','ttl'=>3600]]));
         $app=Application::create(dirname(__DIR__,2))->bootstrap();
         $app->container()->instance('database',$db); $app->container()->instance('jwt',$jwt);
-        $tokens=[];foreach(['1','2','3','4'] as $user) $tokens[$user]=$jwt->createToken($user);
+        $tokens=[];foreach(['1','2','3','4'] as $user) $tokens[$user]=$jwt->createToken($user, $user==='1');
         $call=static function(string $method,string $path,?string $token,array $body=[]) use($app):array {
             $headers=['Content-Type'=>'application/json'];if($token!==null)$headers['Authorization']='Bearer '.$token;
             try{$response=$app->handle(Request::create($method,$path,[],$headers,$method==='GET'?null:json_encode($body)));return[$response->status(),json_decode($response->body(),true),$response->header('Cache-Control')];}

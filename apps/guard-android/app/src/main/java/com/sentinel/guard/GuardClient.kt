@@ -17,9 +17,9 @@ data class GuardSession(val base: String, val token: String, val user: String) {
 class GuardClient(context: Context) {
     private val appContext = context.applicationContext
     private val secure = SecureStore(context)
-    private val queue = object : SQLiteOpenHelper(context, "guard_queue.db", null, 1) {
-        override fun onCreate(db: SQLiteDatabase) { db.execSQL("CREATE TABLE queue (sequence INTEGER PRIMARY KEY AUTOINCREMENT, account TEXT NOT NULL, uuid TEXT NOT NULL UNIQUE, payload TEXT NOT NULL, blocked INTEGER NOT NULL DEFAULT 0)") }
-        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { error("Unsupported queue migration") }
+    private val queue = object : SQLiteOpenHelper(context, "guard_queue.db", null, 2) {
+        override fun onCreate(db: SQLiteDatabase) { db.execSQL("CREATE TABLE queue (sequence INTEGER PRIMARY KEY AUTOINCREMENT, account TEXT NOT NULL, uuid TEXT NOT NULL UNIQUE, payload TEXT NOT NULL, blocked INTEGER NOT NULL DEFAULT 0, error_status INTEGER NOT NULL DEFAULT 0)") }
+        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { if(oldVersion<2)db.execSQL("ALTER TABLE queue ADD COLUMN error_status INTEGER NOT NULL DEFAULT 0") }
     }
     fun configuredServer(): String? {
         if(BuildConfig.DEBUG&&BuildConfig.SENTINEL_SERVER_URL.isNotBlank()) return ServerConfiguration.origin(BuildConfig.SENTINEL_SERVER_URL,true).also { secure.put("server_origin",it) }
@@ -34,13 +34,28 @@ class GuardClient(context: Context) {
         return configuredServer()?.let { ServerConfiguration.signupUrl(it,"",BuildConfig.DEBUG) }
     }
     fun adminUrl(): String? = configuredServer()?.plus("/admin/index.html")
+    fun distributionUrl(): String? = configuredServer()?.plus("/downloads")
     fun session(): GuardSession? = secure.get("session")?.let { val s = JSONObject(it); GuardSession(s.getString("base"), s.getString("token"), s.getString("user")) }
     fun signOut() { secure.remove("session") }
-    fun login(identifier: String, password: String): JSONObject {
+    fun logout():String {val current=session()?:return "Signed out";return try{request(current.base,current.token,"/auth/logout",JSONObject());"Signed out and server session revoked."}catch(_:Exception){"Signed out on this phone. Server revocation could not be confirmed; contact support if the phone is compromised."}finally{signOut()}}
+    fun installationId(): String = secure.get("installation_id") ?: UUID.randomUUID().toString().also { secure.put("installation_id", it) }
+    fun enrollManagedDevice(code: String) {
+        val s = session() ?: throw ApiFailure(401, "Sign in before enrollment")
+        val data = request(s.base,s.token,"/guard/managed/enroll",JSONObject().put("installation_id",installationId()).put("enrollment_code",code)).getJSONObject("data")
+        secure.put("mdm_connection",JSONObject().put("base",s.base).put("token",data.getString("device_token")).toString())
+        refreshManagedPolicy()
+    }
+    fun refreshManagedPolicy() {
+        val connection = secure.get("mdm_connection")?.let(::JSONObject) ?: return
+        val controller = ManagedDeviceController(appContext)
+        val data = request(connection.getString("base"),"","/managed-device/policy",JSONObject().put("installation_id",installationId()).put("device_token",connection.getString("token")).put("reported_revision",controller.revision()).put("reported_state",controller.state())).getJSONObject("data")
+        controller.cache(data)
+    }
+    fun login(identifier: String, password: String, code: String = ""): JSONObject {
         val origin=configuredServer() ?: throw ApiFailure(503,"This app has not been connected to your organisation yet.")
-        val response = try { request(origin, "", "/auth/login", JSONObject().put("identifier", identifier).put("password", password)) }
+        val response = try { request(origin, "", "/auth/login", JSONObject().put("identifier", identifier).put("password", password).put("code",code).put("session_label","Android "+installationId().take(8))) }
         catch (error:ApiFailure) {
-            if(error.status==401)throw ApiFailure(401,appContext.getString(R.string.guard_login_not_found))
+            if(error.status==401)throw ApiFailure(401,"Check your login and enter a fresh authenticator code if MFA is enabled.")
             throw error
         }
         val token = response.getJSONObject("data").getString("token")
@@ -87,6 +102,31 @@ class GuardClient(context: Context) {
         if (s == null) return 0
         queue.readableDatabase.rawQuery("SELECT COUNT(*) FROM queue WHERE account=?", arrayOf(s.account)).use { it.moveToFirst(); return it.getInt(0) }
     }
+    fun queueSummary(): List<JSONObject> = synchronized(syncLock) {
+        val s=session()?:return@synchronized emptyList()
+        val result=mutableListOf<JSONObject>()
+        queue.readableDatabase.rawQuery("SELECT uuid,payload,blocked,error_status FROM queue WHERE account=? ORDER BY sequence",arrayOf(s.account)).use { cursor ->
+            while(cursor.moveToNext())result.add(JSONObject().put("uuid",cursor.getString(0)).put("action",JSONObject(secure.decrypt(cursor.getString(1))).getString("action")).put("blocked",cursor.getInt(2)!=0).put("error_status",cursor.getInt(3)))
+        }
+        result
+    }
+    fun retryBlocked(reason:String) = synchronized(syncLock) {
+        require(reason.trim().length in 10..500){"Enter a supervisor reference/reason between 10 and 500 characters."}
+        val s=session()?:throw ApiFailure(401,"Sign in required")
+        val history=org.json.JSONArray(secure.get("queue_recovery_${s.account}")?:"[]")
+        history.put(JSONObject().put("at",System.currentTimeMillis()).put("reason",reason.trim()).put("operations",org.json.JSONArray(queueSummary().filter{it.getBoolean("blocked")}.map{it.getString("uuid")})))
+        while(history.length()>50)history.remove(0)
+        secure.put("queue_recovery_${s.account}",history.toString())
+        queue.writableDatabase.execSQL("UPDATE queue SET blocked=0 WHERE account=? AND blocked=1",arrayOf(s.account))
+    }
+    fun uploadDiagnostics() {
+        val s=session()?:throw ApiFailure(401,"Sign in required")
+        val rows=queueSummary()
+        val connectivity=appContext.getSystemService(android.net.ConnectivityManager::class.java)
+        val capabilities=connectivity.getNetworkCapabilities(connectivity.activeNetwork)
+        val state=if(capabilities?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED)==true)"VALIDATED" else "UNVERIFIED"
+        request(s.base,s.token,"/guard/diagnostics",JSONObject().put("installation_id",installationId()).put("app_version",BuildConfig.VERSION_NAME).put("pending_count",rows.size).put("blocked_count",rows.count{it.getBoolean("blocked")}).put("network_state",state))
+    }
     fun sync(): String = synchronized(syncLock) {
         val s = session() ?: return@synchronized "Sign in required"
         queue.readableDatabase.rawQuery("SELECT sequence,payload,blocked FROM queue WHERE account=? ORDER BY sequence", arrayOf(s.account)).use { cursor ->
@@ -100,7 +140,7 @@ class GuardClient(context: Context) {
                 } catch (error: ApiFailure) {
                     when (RetryPolicy.decide(error.status)) {
                         RetryPolicy.Decision.SIGN_IN -> { signOut(); return@synchronized "Session expired. Sign in to resume retained events." }
-                        RetryPolicy.Decision.REVIEW -> { queue.writableDatabase.execSQL("UPDATE queue SET blocked=1 WHERE sequence=? AND account=?", arrayOf<Any>(sequence, s.account)); return@synchronized "Event needs review: ${error.message}" }
+                        RetryPolicy.Decision.REVIEW -> { queue.writableDatabase.execSQL("UPDATE queue SET blocked=1,error_status=? WHERE sequence=? AND account=?", arrayOf<Any>(error.status,sequence, s.account)); return@synchronized "Event needs review: ${error.message}" }
                         else -> return@synchronized "Connection unavailable. Events remain encrypted on this device."
                     }
                 }

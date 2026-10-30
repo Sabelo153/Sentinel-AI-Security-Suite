@@ -25,6 +25,7 @@ final class AuthenticationMiddleware implements MiddlewareInterface
     {
         $token = $this->jwt->validateToken(BearerToken::fromRequest($request));
         $this->context->setUser((string) $token->claims()->get('sub'));
+        $this->context->setMfaVerified($token->claims()->get('mfa_verified',false) === true);
 
         return $next($request);
     }

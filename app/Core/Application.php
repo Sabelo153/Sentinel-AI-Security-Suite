@@ -134,6 +134,9 @@ final class Application
         $this->container->singleton('support_workspace_service', static fn (Container $c): \Sentinel\Services\SupportWorkspaceService => new \Sentinel\Services\SupportWorkspaceService(
             $c->make(self::SERVICE_DATABASE), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_AUDIT),
         ));
+        $this->container->singleton('managed_android_service', static fn (Container $c): \Sentinel\Services\ManagedAndroidService => new \Sentinel\Services\ManagedAndroidService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('session_security_service', static fn (Container $c): \Sentinel\Services\SessionSecurityService => new \Sentinel\Services\SessionSecurityService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_CONFIG),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('field_operations_service', static fn (Container $c): \Sentinel\Services\FieldOperationsService => new \Sentinel\Services\FieldOperationsService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('supervisor_attention_service'),$c->make('alert_notification_service')));
 
         $this->container->singleton(
             self::SERVICE_RUNTIME_CONTEXT,
@@ -159,7 +162,7 @@ final class Application
         if (!$this->container->has(self::SERVICE_JWT)) {
             $this->container->singleton(
                 self::SERVICE_JWT,
-                static fn (Container $c): \Sentinel\Security\JwtService => new \Sentinel\Security\JwtService($c->make(self::SERVICE_CONFIG)),
+                static fn (Container $c): \Sentinel\Security\JwtService => new \Sentinel\Security\JwtService($c->make(self::SERVICE_CONFIG), $c->make('session_security_service')),
             );
         }
 
@@ -701,6 +704,7 @@ final class Application
                 static fn (Container $c): \Sentinel\Security\LoginService => new \Sentinel\Security\LoginService(
                     $c->make(self::SERVICE_PASSWORD_AUTHENTICATOR),
                     $c->make(self::SERVICE_JWT),
+                    $c->make('session_security_service'),
                 ),
             );
         }
