@@ -23,6 +23,9 @@ final class AuthorizationService
         if ($userId === '' || $permission === '') {
             return false;
         }
+        if (in_array($permission, ['support.manage', 'managed_android.manage'], true) && !$this->context->mfaVerified()) {
+            return false;
+        }
 
         if ($this->subscriptions !== null && !$this->subscriptions->allows($permission)) {
             return false;

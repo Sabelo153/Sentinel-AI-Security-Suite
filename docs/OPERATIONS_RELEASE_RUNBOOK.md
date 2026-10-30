@@ -1,5 +1,8 @@
 # Operational release runbook
 
+For the 0.7 field operations, account security and managed Android additions,
+use [the field release guide](FIELD_RELEASE_0_7.md) alongside this baseline.
+
 This document describes rollout work. No production deployment, database migration, role grant, notification transmission, or backup restore was performed by the implementation task.
 
 ## Release gates
@@ -79,7 +82,7 @@ Test on managed physical devices starting with Android 8/API 26 and including th
 - Disconnect before sending, during upload, and after server commit but before response. Reconnect and verify one server mutation for each stable operation UUID.
 - Clock-in/out for own shifts, rejected peer shifts, completed/cancelled shifts, and invalid timestamps.
 - Start/complete patrols; valid, unknown and wrong-route QR/NFC codes; duplicate/ambiguous checkpoint registry values.
-- QR scanning prefers Google Code Scanner. If Google Play services or its scanner module is unavailable, the app captures a camera preview and reads the QR locally with the bundled model. Test this fallback on devices without Google services. NFC uses the lowercase hexadecimal tag UID registered as `nfc_tag`; UID matching is not cryptographic anti-cloning proof.
+- The 0.7 QR scanner captures a camera preview and decodes it with embedded ZXing Core. It does not use Google Code Scanner, ML Kit or Play services. Test a device without Google services and allowlist its camera app in kiosk mode. NFC uses the lowercase hexadecimal tag UID registered as `nfc_tag`; UID matching is not cryptographic anti-cloning proof.
 - Fresh foreground GPS, denied permission, GPS disabled, poor signal and mock location. Continuous/background GPS is not implemented.
 - Queue capacity (500), blocked 403/404/409/422 events, process death, reboot, encryption-key failure, and device loss. A blocked event stops later events; a secure supervisor repair/export workflow is still needed.
 - Android's background job scheduling is opportunistic, not a real-time delivery guarantee. Users can synchronize explicitly.

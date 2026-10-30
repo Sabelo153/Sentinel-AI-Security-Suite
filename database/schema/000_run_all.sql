@@ -67,4 +67,6 @@ SOURCE 063_mobile_operations.sql;
 SOURCE 064_company_subscriptions.sql;
 
 SOURCE 065_patrol_schedule_windows.sql;
+SOURCE 066_field_operations_release.sql;
+SOURCE 067_managed_android.sql;
 

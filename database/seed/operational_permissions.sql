@@ -201,6 +201,38 @@ SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS ac
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
 UNION ALL
+SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'managed_android.view' AS permission_code, 'managed_android' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'managed_android.manage' AS permission_code, 'managed_android' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'compliance.view' AS permission_code, 'compliance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'compliance.manage' AS permission_code, 'compliance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment.view' AS permission_code, 'equipment' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment.manage' AS permission_code, 'equipment' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'escalations.view' AS permission_code, 'escalations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'escalations.manage' AS permission_code, 'escalations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.view' AS permission_code, 'client_portal' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_portal.manage' AS permission_code, 'client_portal' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.read' AS permission_code, 'client_portal' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'payroll_export.view' AS permission_code, 'payroll_export' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'payroll_export.manage' AS permission_code, 'payroll_export' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'support.delegated_view' AS permission_code, 'support' AS module_name, 'delegated_view' AS action_name
+UNION ALL
 SELECT 'users.view' AS permission_code, 'users' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'vehicles.create' AS permission_code, 'vehicles' AS module_name, 'create' AS action_name
@@ -423,6 +455,38 @@ UNION ALL
 SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS action_name
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
+UNION ALL
+SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'managed_android.view' AS permission_code, 'managed_android' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'managed_android.manage' AS permission_code, 'managed_android' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'compliance.view' AS permission_code, 'compliance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'compliance.manage' AS permission_code, 'compliance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment.view' AS permission_code, 'equipment' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment.manage' AS permission_code, 'equipment' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'escalations.view' AS permission_code, 'escalations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'escalations.manage' AS permission_code, 'escalations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.view' AS permission_code, 'client_portal' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_portal.manage' AS permission_code, 'client_portal' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.read' AS permission_code, 'client_portal' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'payroll_export.view' AS permission_code, 'payroll_export' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'payroll_export.manage' AS permission_code, 'payroll_export' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'support.delegated_view' AS permission_code, 'support' AS module_name, 'delegated_view' AS action_name
 UNION ALL
 SELECT 'users.view' AS permission_code, 'users' AS module_name, 'view' AS action_name
 UNION ALL

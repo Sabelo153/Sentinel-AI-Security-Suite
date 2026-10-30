@@ -32,6 +32,12 @@ final class AuditedMutationService
             return $response;
         } catch (\Throwable $error) {
             if ($this->db->inTransaction()) $this->db->rollBack();
+            // Roll back the rejected mutation, but retain the security failure
+            // counter that was rolled back with it. Login failures run outside
+            // this wrapper and already persist their own counter.
+            if ($error instanceof HttpException && $error->errorCode()==='mfa_invalid_code') {
+                $this->db->execute('UPDATE account_mfa SET locked_until=CASE WHEN failed_attempts>=4 THEN :locked ELSE locked_until END,failed_attempts=failed_attempts+1 WHERE user_id=:user AND locked_until<=:now',['locked'=>time()+900,'user'=>$this->context->user(),'now'=>time()]);
+            }
             if ($error instanceof \PDOException) throw HttpException::serviceUnavailable('The operation could not be safely recorded.', 'mutation_unavailable');
             throw $error;
         }

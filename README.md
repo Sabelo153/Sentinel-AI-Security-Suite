@@ -17,6 +17,23 @@ This repository is a source snapshot of work in development. Features, architect
 ## Technologies
 PHP 8.2+, MySQL/MariaDB, HTML, CSS, JavaScript, Kotlin/Android and Composer.
 
+## Field operations 0.7 source
+The next release adds mobile incident/occurrence reporting with photos, safe
+unchanged-command queue retries, uploaded diagnostics, individual login-session
+revocation, authenticator MFA with single-use recovery codes, temporary diagnostic
+access, compliance requirements, equipment handovers, approved client reports,
+attendance approvals/exports and a scheduled in-app escalation worker.
+
+Android device-owner controls provide approved-app kiosk policies, optional
+notification/status-bar restrictions and offline supervisor recovery on supported
+company-managed phones. Ordinary app installation does not grant these controls.
+See [field release and rollout guide](docs/FIELD_RELEASE_0_7.md) for schemas,
+permissions, provisioning, recovery, integration limits and physical-device
+acceptance. These source additions are not a production deployment.
+
+The Android app can be installed from a company-hosted APK or USB without Play
+Store, a Google account or Play services. See [private APK installation and updates](docs/APK_DISTRIBUTION.md).
+
 ## Start locally
 1. Install PHP 8.2+, Composer and a compatible MySQL/MariaDB server.
 2. Run `composer install`.

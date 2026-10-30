@@ -31,11 +31,6 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.*
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.common.InputImage
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
@@ -44,7 +39,8 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
-    private companion object { const val QR_CAMERA_REQUEST = 7102 }
+    private companion object { const val QR_CAMERA_REQUEST = 7102; const val REPORT_CAMERA_REQUEST = 7103 }
+    private var reportPhoto: String? = null
     private lateinit var client: GuardClient
     private lateinit var layout: LinearLayout
     private lateinit var notice: TextView
@@ -82,6 +78,7 @@ class MainActivity : Activity() {
         notice=TextView(this).apply { accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_POLITE;setTextColor(muted);textSize=14f;setLineSpacing(0f,1.18f);setPadding(0,0,0,dp(12));layoutParams=LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT) };layout.addView(notice)
         progress=ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply { isIndeterminate=true;indeterminateTintList=ColorStateList.valueOf(cyan);visibility=View.GONE;contentDescription=getString(R.string.working) };layout.addView(progress,LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(4)).apply{bottomMargin=dp(14)})
         scroll.animate().alpha(1f).translationY(0f).setDuration(280).setInterpolator(DecelerateInterpolator()).start()
+        if(ManagedDeviceController(this).isOwner()) button("Device management / supervisor recovery",::managedDeviceScreen)
     }
     private fun text(value: String) { layout.addView(TextView(this).apply { text=value;textSize=16f;setTextColor(ink);setLineSpacing(0f,1.16f);setPadding(dp(2),dp(18),dp(2),dp(8));layoutParams=LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT) }) }
     private fun button(value: String, action: ()->Unit) { layout.addView(Button(this).apply { text=value;isAllCaps=false;textSize=14f;setTextColor(navy);stateListAnimator=null;background=ripple(surface(Color.WHITE,12,Color.rgb(207,220,229)));setPadding(dp(14),0,dp(14),0);minHeight=dp(50);setOnClickListener { animate().scaleX(.98f).scaleY(.98f).setDuration(70).withEndAction{animate().scaleX(1f).scaleY(1f).setDuration(120).start();action()}.start() };layoutParams=LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(52)).apply{topMargin=dp(6)} }) }
@@ -106,20 +103,22 @@ class MainActivity : Activity() {
             passwordVisibility=reveal
             layout.addView(reveal,LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT))
             val loginLayout=layout
+            val authenticator=field("Authenticator / recovery code (if enabled)");authenticator.isSaveEnabled=false
             val loginNotice=notice
             val loginProgress=progress
             var signingIn=false
             primaryButton(getString(R.string.sign_in)) {
                 if(signingIn)return@primaryButton
                 val name=identifier.text.toString().trim();val secret=password.text.toString()
+                val authCode=authenticator.text.toString().trim()
                 if(name.isBlank()||secret.isBlank()){notice.text=getString(R.string.enter_login_details);return@primaryButton}
                 signingIn=true
                 identifier.isEnabled=false;password.isEnabled=false;reveal.isChecked=false;reveal.isEnabled=false
                 loginNotice.text=getString(R.string.signing_in);loginProgress.visibility=View.VISIBLE
                 worker.execute {
                     try {
-                        val result=client.login(name,secret)
-                        runOnUiThread { password.text.clear();if(!isDestroyed&&layout===loginLayout){workspace=result;home();synchronize()} }
+                        val result=client.login(name,secret,authCode)
+                        runOnUiThread { password.text.clear();authenticator.text.clear();if(!isDestroyed&&layout===loginLayout){workspace=result;home();synchronize()} }
                     } catch(error:Exception) {
                         runOnUiThread { if(!isDestroyed&&layout===loginLayout){loginNotice.text=error.message?:getString(R.string.operation_failed);password.requestFocus()} }
                     } finally {
@@ -198,9 +197,10 @@ class MainActivity : Activity() {
         worker.execute { try { action() } catch(error:Exception) { runOnUiThread { if(error is ApiFailure && error.status==401){client.signOut();loginScreen()};notice.text=error.message?:getString(R.string.operation_failed) } } finally { runOnUiThread { if(::progress.isInitialized)progress.visibility=View.GONE } } }
     }
     private fun synchronize() = background {
+        try { client.refreshManagedPolicy() } catch(_:Exception) { /* Retain last known policy offline. */ }
         val result=client.sync()
         if(client.session()!=null)try { workspace=client.refresh() } catch(_:ApiFailure) { /* Cached workspace stays available offline. */ }
-        runOnUiThread { if(client.session()==null)loginScreen() else home();notice.text=result }
+        runOnUiThread { if(client.session()==null)loginScreen() else home();notice.text=result;applyManagedPolicy() }
     }
     private fun enqueue(action:String,data:JSONObject) {
         background {
@@ -221,7 +221,13 @@ class MainActivity : Activity() {
         button(getString(R.string.capture_gps),::captureLocation)
         button("My patrol schedule") { scheduleScreen() }
         button("Patrol history",::historyScreen)
+        button("Report incident") { chooseReportShift("incident") }
+        button("Occurrence book / handover") { chooseReportShift("occurrence") }
+        button("Offline queue and diagnostics",::queueScreen)
+        button("Enrol company-managed phone",::managedDeviceScreen)
         button("Open manager dashboard") { client.adminUrl()?.let{startActivity(Intent(Intent.ACTION_VIEW,android.net.Uri.parse(it)))} }
+        button("Company APK installation / updates") { client.distributionUrl()?.let{try{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(it)))}catch(_:Exception){notice.text="Ask your supervisor to use the company APK or USB update process. Kiosk restrictions may block the browser."}} }
+        button("Open-source notices") { AlertDialog.Builder(this).setTitle("ZXing Core · Apache 2.0").setMessage(assets.open("licenses/zxing.txt").bufferedReader().use{it.readText()}).setPositiveButton("Close",null).show() }
         text(getString(R.string.shifts))
         val openShifts=rows("shifts").filter{it.optString("assignment_status") in listOf("ASSIGNED","CONFIRMED","IN_PROGRESS")}
         if(openShifts.isEmpty())text("No assigned shifts yet. Your manager must assign a shift at your site, then you can synchronize here. You can sign in successfully before work has been assigned.")
@@ -252,7 +258,7 @@ class MainActivity : Activity() {
             }
         }
         text(getString(R.string.offline_events_notice))
-        button(getString(R.string.sign_out)) { client.signOut();nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);loginScreen() }
+        button(getString(R.string.sign_out)) { background{val result=client.logout();runOnUiThread{nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);loginScreen();notice.text=result}} }
     }
     private fun historyScreen() {
         screen("My patrol history")
@@ -356,13 +362,7 @@ class MainActivity : Activity() {
 
     private fun scanQr(onScanned:(String)->Unit) {
         qrCallback=onScanned
-        try {
-            GmsBarcodeScanning.getClient(this).startScan()
-                .addOnSuccessListener { barcode -> finishQrScan(barcode.rawValue) }
-                .addOnFailureListener { openCameraQrCapture() }
-        } catch (_: Exception) {
-            openCameraQrCapture()
-        }
+        openCameraQrCapture()
     }
 
     private fun openCameraQrCapture() {
@@ -385,21 +385,29 @@ class MainActivity : Activity() {
         data?.getParcelableExtra("data",Bitmap::class.java)
     else data?.extras?.get("data") as? Bitmap
 
-    @Deprecated("Camera capture fallback for devices without Google Play services")
+    @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode:Int,resultCode:Int,data:Intent?) {
         super.onActivityResult(requestCode,resultCode,data)
+        if(requestCode==REPORT_CAMERA_REQUEST){
+            if(resultCode==RESULT_OK){
+                val bitmap=cameraResultBitmap(data)
+                if(bitmap!=null){val bytes=java.io.ByteArrayOutputStream();bitmap.compress(Bitmap.CompressFormat.JPEG,75,bytes);if(bytes.size()<=200000){reportPhoto=android.util.Base64.encodeToString(bytes.toByteArray(),android.util.Base64.NO_WRAP);notice.text="Photo attached. It will be queued with your report."}else notice.text="Photo too large; report has not been submitted."}
+            }
+            return
+        }
         if(requestCode!=QR_CAMERA_REQUEST)return
         if(resultCode!=RESULT_OK) { qrCallback=null;notice.text=getString(R.string.qr_scan_cancelled);return }
         val bitmap=cameraResultBitmap(data)
         if(bitmap==null) { qrCallback=null;notice.text=getString(R.string.qr_not_found);return }
         notice.text=getString(R.string.qr_reading_photo)
-        val options=BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
-        val scanner=BarcodeScanning.getClient(options)
-        scanner.process(InputImage.fromBitmap(bitmap,0))
-            .addOnSuccessListener { codes -> finishQrScan(codes.firstOrNull()?.rawValue) }
-            .addOnFailureListener { qrCallback=null;notice.text=getString(R.string.qr_not_found) }
-            .addOnCompleteListener { scanner.close() }
+        if(bitmap.width.toLong()*bitmap.height>4_000_000){qrCallback=null;notice.text=getString(R.string.qr_not_found);return}
+        val account=client.session()?.account
+        worker.execute {
+            val value=try{val pixels=IntArray(bitmap.width*bitmap.height);bitmap.getPixels(pixels,0,bitmap.width,0,0,bitmap.width,bitmap.height);QrDecoder.decode(pixels,bitmap.width,bitmap.height)}catch(_:Exception){null}
+            runOnUiThread { if(!isDestroyed && client.session()?.account==account)finishQrScan(value) }
+        }
     }
+
     private fun captureLocation() {
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION),41);return}
         val manager=getSystemService(LocationManager::class.java)
@@ -420,4 +428,48 @@ class MainActivity : Activity() {
     override fun onRequestPermissionsResult(requestCode:Int,permissions:Array<out String>,grantResults:IntArray){super.onRequestPermissionsResult(requestCode,permissions,grantResults);if(requestCode==41&&grantResults.firstOrNull()==PackageManager.PERMISSION_GRANTED)captureLocation()else notice.text=getString(R.string.location_permission_denied)}
     override fun onPause(){super.onPause();passwordVisibility?.isChecked=false;nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);locationCancellation?.cancel()}
     override fun onDestroy(){super.onDestroy();worker.shutdown()}
+
+    override fun onPostResume(){super.onPostResume();applyManagedPolicy()}
+    private fun applyManagedPolicy(){try{val controller=ManagedDeviceController(this);val oldState=controller.state();val oldRevision=controller.revision();controller.apply(this);if(oldState!=controller.state()||oldRevision!=controller.revision())reportManagedPolicyState()}catch(_:Exception){notice.text="Managed policy could not be fully applied. Contact your supervisor; recovery remains available."}}
+    private fun reportManagedPolicyState(){if(!worker.isShutdown)worker.execute{try{client.refreshManagedPolicy()}catch(_:Exception){/* Last-known acknowledgement will be retried on subsequent contact. */}}}
+    private fun managedDeviceScreen(){
+        screen("Company-managed device")
+        val controller=ManagedDeviceController(this)
+        text("Device owner: ${controller.isOwner()} · policy state: ${controller.state()} · revision: ${controller.revision()}. An ordinary install cannot enforce app or notification restrictions.")
+        if(client.session()!=null){val enrollment=field("One-time company enrollment code",true);button("Enrol this phone"){val value=enrollment.text.toString().trim();enrollment.text.clear();background{client.enrollManagedDevice(value);runOnUiThread{applyManagedPolicy();managedDeviceScreen()}}}}
+        button("Refresh management policy"){background{client.refreshManagedPolicy();runOnUiThread{applyManagedPolicy();managedDeviceScreen()}}}
+        for(name in controller.allowedApps())button("Open approved app: $name"){try{controller.launch(this,name)}catch(e:Exception){notice.text=e.message}}
+        val recovery=field("Supervisor offline recovery code",true)
+        button("Release restrictions with recovery code"){val value=recovery.text.toString();recovery.text.clear();try{controller.recover(this,value);notice.text="Restrictions released. Administrator must send a new revision to re-enable management.";reportManagedPolicyState()}catch(e:Exception){notice.text=e.message}}
+        button("Back"){if(client.session()==null)loginScreen()else home()}
+    }
+    private fun chooseReportShift(action:String){
+        val shifts=rows("shifts").filter{it.optString("assignment_status")!="CANCELLED"}
+        if(shifts.isEmpty()){notice.text="Synchronize an assigned shift before recording a report.";return}
+        AlertDialog.Builder(this).setTitle("Choose reporting shift").setItems(shifts.map{"${it.optString("shift_name")} ${it.optString("assignment_date")}"}.toTypedArray()){_,i->reportScreen(action,shifts[i])}.show()
+    }
+    private fun reportScreen(action:String,shift:JSONObject){
+        reportPhoto=null;screen(if(action=="incident")"Incident report" else "Occurrence / handover")
+        text("For an emergency, contact your control room now. Queued reports may not reach it until connectivity returns.")
+        val occurred=field("UTC event time (yyyy-MM-dd HH:mm:ss)");occurred.setText(now())
+        val body=field("Facts, action taken and outstanding follow-up");body.isSingleLine=false;body.minLines=4
+        val severity=Spinner(this);severity.adapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,listOf("MEDIUM","LOW","HIGH","CRITICAL"));if(action=="incident")layout.addView(severity)
+        button("Attach camera photo"){try{startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE),REPORT_CAMERA_REQUEST)}catch(_:Exception){notice.text="Camera unavailable. Ask the supervisor to approve the camera app if kiosk restrictions block it."}}
+        button("Save encrypted report and synchronize"){
+            val value=body.text.toString().trim();if(value.isBlank()||value.length>10000){notice.text="Enter report text up to 10000 characters.";return@button}
+            val data=JSONObject().put("shift_assignment_id",shift.get("shift_assignment_id")).put("occurred_at",occurred.text.toString().trim()).put("text",value)
+            if(action=="incident")data.put("severity",severity.selectedItem.toString())
+            reportPhoto?.let{data.put("photo_base64",it)};reportPhoto=null;enqueue(action,data)
+        }
+        button("Cancel",::home)
+    }
+    private fun queueScreen(){
+        screen("Offline queue and diagnostics")
+        text("Records remain encrypted on this phone. Retry keeps the original operation ID and contents. Correct the account/site problem with your supervisor first; never clear app data.")
+        for(row in client.queueSummary())text("${row.getString("uuid")} · ${row.getString("action")} · blocked=${row.getBoolean("blocked")} · HTTP ${row.getInt("error_status")}")
+        val reason=field("Supervisor reference / reason for retry")
+        button("Retry unchanged blocked events"){try{client.retryBlocked(reason.text.toString());synchronize()}catch(e:Exception){notice.text=e.message}}
+        button("Upload safe diagnostic snapshot"){background{client.uploadDiagnostics();runOnUiThread{notice.text="Diagnostic snapshot uploaded; no report text, photos or location included."}}}
+        button("Back",::home)
+    }
 }

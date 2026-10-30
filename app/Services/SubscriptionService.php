@@ -27,7 +27,7 @@ final class SubscriptionService
     {
         $subscription = $this->current();
         if ($subscription === null) return true; // Existing tenants are grandfathered until migrated.
-        if (in_array($permission, ['subscriptions.view', 'users.password_change'], true)) return true;
+        if (in_array($permission, ['subscriptions.view', 'users.password_change', 'support.view', 'support.manage', 'support.delegated_view'], true)) return true;
         if (!in_array($subscription['subscription_status'], ['ACTIVE', 'TRIALING'], true)) return false;
         if ($subscription['subscription_status'] === 'TRIALING' && $subscription['trial_ends_at'] !== null && strtotime((string) $subscription['trial_ends_at']) < time()) return false;
         return SubscriptionPolicy::allows((string) $subscription['plan_code'], $permission);

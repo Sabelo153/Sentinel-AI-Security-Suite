@@ -28,6 +28,14 @@ final class SupportDiagnosticsService
         'reports_and_audit' => ['audit_logs', 'activity_logs'],
         'subscriptions' => ['company_subscriptions'],
         'geofencing' => ['geofences', 'gps_locations', 'gps_events'],
+        'account_security' => ['security_sessions','account_mfa','support_grants'],
+        'managed_android' => ['managed_android'],
+        'compliance' => ['compliance_items'],
+        'equipment_handovers' => ['equipment_items','equipment_handovers'],
+        'client_portal' => ['client_portal_access','published_site_reports'],
+        'payroll_approvals' => ['attendance_approvals'],
+        'escalation_worker' => ['escalation_rules','escalation_events'],
+        'mobile_reports_and_diagnostics' => ['report_photos','mobile_diagnostics'],
         'contracts_and_posts' => ['contracts', 'posts'],
     ];
 

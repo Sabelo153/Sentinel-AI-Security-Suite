@@ -24,7 +24,7 @@ final class JwtService
     private readonly string $issuer;
     private readonly int $ttl;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, private readonly ?\Sentinel\Services\SessionSecurityService $sessions = null)
     {
         $algorithm = (string) $config->get('jwt.algorithm', self::ALGORITHM);
         $secret = $config->get('jwt.secret');
@@ -40,7 +40,7 @@ final class JwtService
         $this->jwt = Configuration::forSymmetricSigner(new Sha256(), InMemory::plainText($secret));
     }
 
-    public function createToken(string $userId): string
+    public function createToken(string $userId, bool $mfaVerified = false, string $sessionLabel = 'API'): string
     {
         if ($userId === '' || preg_match('/^[A-Za-z0-9._:-]{1,255}$/', $userId) !== 1) {
             throw new \InvalidArgumentException('User identifier is invalid.');
@@ -52,14 +52,18 @@ final class JwtService
             throw new \LogicException('JWT expiration must be in the future.');
         }
 
-        return $this->jwt->builder()
+        $jti = uuid4();
+        $token = $this->jwt->builder()
             ->issuedBy($this->issuer)
             ->relatedTo($userId)
             ->issuedAt($issuedAt)
             ->expiresAt($expiresAt)
-            ->identifiedBy(uuid4())
+            ->identifiedBy($jti)
+            ->withClaim('mfa_verified',$mfaVerified)
             ->getToken($this->jwt->signer(), $this->jwt->signingKey())
             ->toString();
+        $this->sessions?->register($userId, $jti, $expiresAt, $sessionLabel);
+        return $token;
     }
 
     public function validateToken(string $token): UnencryptedToken
@@ -103,6 +107,7 @@ final class JwtService
                 throw new \InvalidArgumentException('JWT time claims are invalid.');
             }
 
+            $this->sessions?->assertActive((string)$claims->get('sub'), (string)$claims->get('jti'));
             return $parsed;
         } catch (\Throwable $exception) {
             throw new HttpException(401, 'Authentication failed.', 'authentication_failed', $exception);

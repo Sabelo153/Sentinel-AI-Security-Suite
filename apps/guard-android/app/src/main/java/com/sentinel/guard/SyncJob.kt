@@ -6,7 +6,9 @@ class SyncJob : JobService() {
     override fun onStartJob(params: JobParameters): Boolean {
         Thread {
             var retry = false
-            try { val client = GuardClient(applicationContext); client.sync(); retry = client.session() != null && client.pending() > 0 } catch (_: Exception) { retry = true }
+            val client = GuardClient(applicationContext)
+            try { client.refreshManagedPolicy(); ManagedDeviceController(applicationContext).apply(); client.refreshManagedPolicy() } catch (_: Exception) { retry = true }
+            try { client.sync(); retry = retry || (client.session() != null && client.pending() > 0) } catch (_: Exception) { retry = true }
             jobFinished(params, retry)
         }.start()
         return true

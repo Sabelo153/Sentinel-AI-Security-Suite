@@ -192,7 +192,8 @@ final class ApplicationTest extends TestCase
             self::assertNotSame('', trim((string) $route['permission']));
         }
 
-        self::assertSame(['/api/v1/status', '/api/v1/plans', '/api/v1/auth/signup', '/api/v1/auth/login'], $publicPaths);
+        // The MDM endpoint authenticates a scoped installation credential, not a guard JWT.
+        self::assertSame(['/api/v1/managed-device/policy', '/api/v1/status', '/api/v1/plans', '/api/v1/auth/signup', '/api/v1/auth/login'], $publicPaths);
     }
 
     public function testApiRouteAndUnknownRoute(): void
@@ -208,6 +209,7 @@ final class ApplicationTest extends TestCase
         $app = Application::create($this->projectRoot())->bootstrap();
         $database = new Database(new Config(['database' => []]), static fn (): PDO => new PDO('sqlite::memory:', null, null, [PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]));
         $database->execute('CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT, email TEXT, password_hash TEXT, status TEXT)');
+        $database->execute('CREATE TABLE account_mfa (user_id INTEGER PRIMARY KEY, enabled INTEGER)');
         $database->execute('INSERT INTO users VALUES (7, :username, :email, :hash, :status)', [
             'username' => 'guard7', 'email' => 'guard@example.test', 'hash' => password_hash('secret', PASSWORD_DEFAULT), 'status' => 'ACTIVE',
         ]);
