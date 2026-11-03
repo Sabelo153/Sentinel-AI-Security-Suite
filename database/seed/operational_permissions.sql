@@ -245,6 +245,40 @@ SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage'
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
 UNION ALL
+SELECT 'site_access.view' AS permission_code, 'site_access' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_access.manage' AS permission_code, 'site_access' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_workspace.view' AS permission_code, 'site_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.view' AS permission_code, 'inspection_forms' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.manage' AS permission_code, 'inspection_forms' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.view' AS permission_code, 'client_requests' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_requests.manage' AS permission_code, 'client_requests' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.client' AS permission_code, 'client_requests' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'availability.view' AS permission_code, 'availability' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'availability.manage' AS permission_code, 'availability' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'availability.self' AS permission_code, 'availability' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'report_reviews.view' AS permission_code, 'report_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'report_reviews.client' AS permission_code, 'report_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'quotations.view' AS permission_code, 'quotations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'quotations.manage' AS permission_code, 'quotations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'quotations.client' AS permission_code, 'quotations' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'site_scope.restricted' AS permission_code, 'site_scope' AS module_name, 'restricted' AS action_name
+UNION ALL
 SELECT 'service_levels.manage' AS permission_code, 'service_levels' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'maintenance.view' AS permission_code, 'maintenance' AS module_name, 'view' AS action_name
@@ -571,6 +605,40 @@ UNION ALL
 SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_access.view' AS permission_code, 'site_access' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_access.manage' AS permission_code, 'site_access' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_workspace.view' AS permission_code, 'site_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.view' AS permission_code, 'inspection_forms' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.manage' AS permission_code, 'inspection_forms' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.view' AS permission_code, 'client_requests' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_requests.manage' AS permission_code, 'client_requests' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.client' AS permission_code, 'client_requests' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'availability.view' AS permission_code, 'availability' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'availability.manage' AS permission_code, 'availability' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'availability.self' AS permission_code, 'availability' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'report_reviews.view' AS permission_code, 'report_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'report_reviews.client' AS permission_code, 'report_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'quotations.view' AS permission_code, 'quotations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'quotations.manage' AS permission_code, 'quotations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'quotations.client' AS permission_code, 'quotations' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'site_scope.restricted' AS permission_code, 'site_scope' AS module_name, 'restricted' AS action_name
 UNION ALL
 SELECT 'service_levels.manage' AS permission_code, 'service_levels' AS module_name, 'manage' AS action_name
 UNION ALL

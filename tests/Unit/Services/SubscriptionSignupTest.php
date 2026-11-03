@@ -49,8 +49,9 @@ final class SubscriptionSignupTest extends TestCase
         self::assertSame('South Africa',$db->fetch('SELECT country FROM companies')['country']);
         self::assertCount(1,$db->fetchAll('SELECT * FROM companies')); self::assertCount(1,$db->fetchAll('SELECT * FROM people')); self::assertCount(1,$db->fetchAll('SELECT * FROM employees')); self::assertCount(1,$db->fetchAll('SELECT * FROM users')); self::assertCount(1,$db->fetchAll('SELECT * FROM sites'));
         $codes=array_column($db->fetchAll('SELECT permission_code FROM permissions ORDER BY permission_code'),'permission_code');
-        self::assertSame(['dashboard.view','incidents.view','occurrence_book.create','occurrence_book.view','sites.view','subscriptions.view','users.password_change'],$codes);
+        self::assertSame(['dashboard.view','incidents.view','occurrence_book.create','occurrence_book.view','site_scope.restricted','sites.view','subscriptions.view','users.password_change'],$codes);
         self::assertNotContains('guard.self',$codes);
+        self::assertNull($db->fetch("SELECT rp.permission_id FROM role_permissions rp JOIN permissions p ON p.permission_id=rp.permission_id WHERE p.permission_code='site_scope.restricted'"));
         self::assertTrue(password_verify('correct horse battery',(string)$db->fetch('SELECT password_hash FROM users')['password_hash']));
     }
 

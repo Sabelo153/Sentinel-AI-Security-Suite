@@ -137,7 +137,12 @@ final class Application
         $this->container->singleton('managed_android_service', static fn (Container $c): \Sentinel\Services\ManagedAndroidService => new \Sentinel\Services\ManagedAndroidService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
         $this->container->singleton('session_security_service', static fn (Container $c): \Sentinel\Services\SessionSecurityService => new \Sentinel\Services\SessionSecurityService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_CONFIG),$c->make(self::SERVICE_AUDIT)));
         $this->container->singleton('field_operations_service', static fn (Container $c): \Sentinel\Services\FieldOperationsService => new \Sentinel\Services\FieldOperationsService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('supervisor_attention_service'),$c->make('alert_notification_service')));
-        $this->container->singleton('control_room_service', static fn(Container $c): \Sentinel\Services\ControlRoomService => new \Sentinel\Services\ControlRoomService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('field_operations_service')));
+        $this->container->singleton('control_room_service', static fn(Container $c): \Sentinel\Services\ControlRoomService => new \Sentinel\Services\ControlRoomService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('field_operations_service'),$c->make('availability_service')));
+        $this->container->singleton('site_access_service', static fn(Container $c) => new \Sentinel\Services\SiteAccessService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make(self::SERVICE_PERMISSION_REPOSITORY)));
+        $this->container->singleton('availability_service', static fn(Container $c) => new \Sentinel\Services\AvailabilityService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('quotation_service', static fn(Container $c) => new \Sentinel\Services\QuotationService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('subscription_service')));
+        $this->container->singleton('inspection_forms_service', static fn(Container $c) => new \Sentinel\Services\InspectionFormsService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('client_care_service', static fn(Container $c) => new \Sentinel\Services\ClientCareService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
         $this->container->singleton('site_assurance_service', static fn(Container $c): \Sentinel\Services\SiteAssuranceService => new \Sentinel\Services\SiteAssuranceService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
         $this->container->singleton('evidence_retention_service', static fn(Container $c): \Sentinel\Services\EvidenceRetentionService => new \Sentinel\Services\EvidenceRetentionService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
         $this->container->singleton('photo_report_service', static fn(Container $c): \Sentinel\Services\PhotoReportService => new \Sentinel\Services\PhotoReportService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('evidence_retention_service')));
@@ -547,6 +552,7 @@ final class Application
                 self::SERVICE_SHIFT_ASSIGNMENT_MANAGEMENT,
                 static fn (Container $c): \Sentinel\Services\ShiftAssignmentManagementService => new \Sentinel\Services\ShiftAssignmentManagementService(
                     $c->make(self::SERVICE_SHIFT_ASSIGNMENT_REPOSITORY),
+                    $c->make('availability_service'),
                 ),
             );
         }

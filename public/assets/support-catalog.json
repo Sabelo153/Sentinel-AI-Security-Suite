@@ -201,5 +201,12 @@
     "symptom": "Queued report blocked or phone diagnostics stale",
     "remedy": "Keep the encrypted queue. Review the HTTP status and supervisor reference, fix the account/site problem, then retry unchanged. Uploaded diagnostics show last receipt time; offline records cannot be pulled remotely.",
     "manual": "Queue a report/photo offline, retry after interrupted delivery and verify exactly one record; reject invalid images and wrong-company shifts."
+  },
+  {
+    "id": "client_workflows",
+    "title": "Client workflows, inspection forms and mobilisation",
+    "remedy": "Apply schema 072 after 071, seed the new permissions for the selected company and grant each workflow explicitly. A site restriction marker is never granted to owners automatically. Check client portal mappings, site grants and current revisions.",
+    "manual": "Required inspection photos and failed checks need supervisor review. Only mapped clients can acknowledge reports, confirm resolved requests and decide quotations. Arrange relief before approving leave. Complete mobilisation evidence before activating a site.",
+    "symptom": "Missing workflow tables, incorrect site access, stale revision, blocked leave or incomplete mobilisation"
   }
 ]

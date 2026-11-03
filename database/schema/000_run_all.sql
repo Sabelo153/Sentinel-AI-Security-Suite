@@ -73,4 +73,5 @@ SOURCE 068_control_room.sql;
 SOURCE 069_site_assurance.sql;
 SOURCE 070_photo_reports.sql;
 SOURCE 071_client_report_delivery.sql;
+SOURCE 072_client_workflows.sql;
 

@@ -30,7 +30,15 @@ final class AuthorizationService
         if ($this->subscriptions !== null && !$this->subscriptions->allows($permission)) {
             return false;
         }
-        return $this->permissionRepository->userHasPermission($userId, $permission);
+        if(!$this->permissionRepository->userHasPermission($userId,$permission))return false;
+        // A restricted role wins over any additional broad role. Only routes
+        // whose services enforce site/self scope are usable by these accounts.
+        if($this->permissionRepository->userHasPermission($userId,'site_scope.restricted'))return in_array($permission,[
+            'site_workspace.view','inspection_forms.view','inspection_forms.manage',
+            'client_requests.view','client_requests.manage','client_requests.client',
+            'report_reviews.view','report_reviews.client','availability.self','users.password_change',
+        ],true);
+        return true;
     }
 
     public function requirePermission(string $userId, string $permission): void

@@ -11,6 +11,7 @@ return static function (Router $router, Container $container): void {
     (require __DIR__.'/field.php')($router,$container);
     (require __DIR__.'/control-room.php')($router,$container);
     (require __DIR__.'/site-assurance.php')($router,$container);
+    (require __DIR__.'/client-workflows.php')($router,$container);
     (require __DIR__.'/photo-reports.php')($router,$container);
     (require __DIR__.'/client-report-delivery.php')($router,$container);
     // Installation credential authenticates this endpoint; no customer records returned.

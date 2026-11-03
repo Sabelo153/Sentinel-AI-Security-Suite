@@ -7,7 +7,7 @@ use Sentinel\Core\{Database,HttpException,RuntimeContext};
 /** All reads are tenant scoped. Mutations serialize on the tenant before reading. */
 final class ControlRoomService
 {
-    public function __construct(private readonly Database $db, private readonly RuntimeContext $context, private readonly AuditService $audit, private readonly FieldOperationsService $field) {}
+    public function __construct(private readonly Database $db, private readonly RuntimeContext $context, private readonly AuditService $audit, private readonly FieldOperationsService $field, private readonly ?AvailabilityService $availability=null) {}
     private function company(): int { return $this->context->requireTenant(); }
     private function actor(): string { if (!$this->context->isAuthenticated()) throw HttpException::unauthorized(); return (string)$this->context->user(); }
     private function fields(array $input,array $allowed): void { if(array_diff(array_keys($input),$allowed)) throw HttpException::unprocessable('Unknown fields.'); }
@@ -95,6 +95,7 @@ final class ControlRoomService
         $this->fields($input,['expected_employee_id','replacement_employee_id','reason']);$shift=$this->row('shift_assignments','shift_assignment_id',$id);$employee=$this->row('employees','employee_id',$input['replacement_employee_id']??null);$reason=$this->text($input['reason']??null);
         if($this->integer($input['expected_employee_id']??null)!==(int)$shift['employee_id'])throw HttpException::conflict('Shift changed. Refresh first.');
         if(!empty($shift['deleted_at'])||!in_array($shift['assignment_status'],['PLANNED','ASSIGNED','CONFIRMED','MISSED'],true)||$shift['shift_end_at']<=gmdate('Y-m-d H:i:s')||$employee['employment_status']!=='ACTIVE'||$employee['employee_id']==$shift['employee_id'])throw HttpException::conflict('Shift or replacement is unavailable for relief.');
+        $this->availability?->assertAvailable((string)$employee['employee_id'],$shift['shift_start_at'],$shift['shift_end_at']);
         if(!(new \Sentinel\Repositories\ShiftAssignmentRepository($this->db,$this->context))->employeeIsGuard((string)$employee['employee_id']))throw HttpException::unprocessable('Replacement needs an active guard position assignment.');
         if($this->db->fetch('SELECT attendance_id FROM attendance WHERE company_id=:company AND shift_assignment_id=:shift AND deleted_at IS NULL',['company'=>$this->company(),'shift'=>$id])||$this->db->fetch('SELECT plan_id FROM lone_worker_plans WHERE company_id=:company AND shift_assignment_id=:shift AND closed_at IS NULL',['company'=>$this->company(),'shift'=>$id]))throw HttpException::conflict('Close the check-in plan and review existing attendance before relief.');
         if($this->db->fetch("SELECT shift_assignment_id FROM shift_assignments WHERE company_id=:company AND employee_id=:employee AND deleted_at IS NULL AND assignment_status NOT IN ('CANCELLED','MISSED') AND shift_start_at<:end AND shift_end_at>:start",['company'=>$this->company(),'employee'=>$employee['employee_id'],'start'=>$shift['shift_start_at'],'end'=>$shift['shift_end_at']]))throw HttpException::conflict('Replacement already has an overlapping shift.');

@@ -72,6 +72,8 @@ final class SignupService
                 $permissionId = (string) $pdo->lastInsertId();
                 $this->db->execute('INSERT INTO role_permissions (company_id,role_id,permission_id,granted_by_user_id) VALUES (:company_id,:role_id,:permission_id,:granted_by)', ['company_id'=>$companyId,'role_id'=>$roleId,'permission_id'=>$permissionId,'granted_by'=>$userId]);
             }
+            // A restriction marker is seeded separately and never granted to the owner.
+            $this->db->execute("INSERT INTO permissions (company_id,permission_code,permission_name,module_name,action_name,permission_description,status) VALUES (:company,'site_scope.restricted','Assigned sites only','site_scope','restricted','Restrict the entire account to scope-aware site workflows.','ACTIVE')",['company'=>$companyId]);
             $this->db->commit();
             return ['company_id'=>$companyId,'user_id'=>$userId,'username'=>$username,'plan_code'=>$plan,'billing_market'=>$billingMarket,'subscription_status'=>$status,'trial_ends_at'=>$trialEnd];
         } catch (HttpException $e) {
