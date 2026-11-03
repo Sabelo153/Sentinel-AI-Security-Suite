@@ -31,6 +31,8 @@ final class SupportDiagnosticsService
         'account_security' => ['security_sessions','account_mfa','support_grants'],
         'managed_android' => ['managed_android'],
         'control_room' => ['dispatch_jobs','lone_worker_plans','lone_worker_events','coverage_requirements','shift_relief_history','gate_register','contract_hourly_rates','invoice_drafts','operational_signals','worker_runs','backup_checks','phone_health'],
+        'site_assurance' => ['site_instruction_versions','site_instruction_acknowledgements','shift_handovers','training_competencies','site_training_requirements','employee_training','maintenance_tickets','maintenance_history','site_service_targets','incident_evidence','evidence_access_history','retention_policies','retention_holds','retention_previews'],
+        'photo_reports_and_delivery' => ['photo_report_templates','photo_reports','photo_report_items','client_report_schedules','client_report_runs','client_report_outbox'],
         'compliance' => ['compliance_items'],
         'equipment_handovers' => ['equipment_items','equipment_handovers'],
         'client_portal' => ['client_portal_access','published_site_reports'],

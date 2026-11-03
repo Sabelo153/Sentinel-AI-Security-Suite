@@ -20,7 +20,7 @@ android {
     compileSdk = 37
     buildToolsVersion = "37.0.0"
     defaultConfig {
-        applicationId = "com.sentinel.guard"; minSdk = 26; targetSdk = 37; versionCode = 16; versionName = "0.8.0"
+        applicationId = "com.sentinel.guard"; minSdk = 26; targetSdk = 37; versionCode = 17; versionName = "0.9.0"
         buildConfigField("String","SENTINEL_SERVER_URL",buildString(sentinelServerUrl))
         buildConfigField("String","SENTINEL_SIGNUP_URL",buildString(sentinelSignupUrl))
         manifestPlaceholders["allowCleartextTraffic"] = "false"

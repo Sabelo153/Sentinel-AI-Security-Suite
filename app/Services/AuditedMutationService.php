@@ -16,6 +16,10 @@ final class AuditedMutationService
         $this->context->requireTenant();
         try {
             $this->db->beginTransaction();
+            // Use the same lock order as roster, guard commands, evidence and
+            // retention. A concurrent visit/hold/edit must not cross a cleanup
+            // eligibility check in the same tenant.
+            if($this->db->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME)==='mysql')$this->db->fetch('SELECT company_id FROM companies WHERE company_id=:company FOR UPDATE',['company'=>$this->context->requireTenant()]);
             $response = $handler($request);
             if ($response->status() >= 400) {
                 $this->db->rollBack();

@@ -21,6 +21,12 @@ final class PatrolCheckpointRepository extends Repository
         return 'patrol_checkpoints';
     }
 
+    public function nfcExistsForRoute(string $route,string $uid,?string $exclude=null): bool
+    {
+        $sql="SELECT patrol_checkpoint_id FROM patrol_checkpoints WHERE company_id=:company AND patrol_route_id=:route AND status='ACTIVE' AND deleted_at IS NULL AND LOWER(REPLACE(REPLACE(REPLACE(nfc_tag,':',''),'-',''),' ',''))=:uid";
+        $params=['company'=>$this->requireCompanyId(),'route'=>$route,'uid'=>$uid];if($exclude!==null){$sql.=' AND patrol_checkpoint_id<>:exclude';$params['exclude']=$exclude;}return $this->db->fetch($sql.' LIMIT 1',$params)!==null;
+    }
+
     public function listForRoute(string $routeId): array
     {
         $companyId = $this->requireCompanyId();

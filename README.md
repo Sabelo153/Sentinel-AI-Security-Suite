@@ -5,7 +5,10 @@ A security operations development project by **Sabelo Andile Biyela**, based in 
 **[Live project website](https://sabelo153.github.io/Sentinel-AI-Security-Suite/)** — interactive sample tour hosted on GitHub Pages. Login and operational records require separate server hosting.
 
 ## Project status
-The latest addition is [Sentinel 0.8 control-room operations](docs/CONTROL_ROOM_0_8.md): dispatch, lone-worker check-ins, roster coverage and relief, offline gate capture, invoice drafts, phone health and readiness monitoring. Follow its migration and acceptance steps before rollout.
+The latest addition is [Sentinel 0.9 site assurance](docs/SITE_ASSURANCE_0_9.md): versioned instructions, handover checklists, training gaps, original evidence, service-level reports, fault tickets and controlled retention with investigation holds.
+It also adds [photo reporting, NFC setup, complete offline patrol capture and scheduled client portal/email summaries](docs/REPORTING_AND_OFFLINE_0_9.md), including six-hour defaults and client-selected delivery times.
+
+The preceding [Sentinel 0.8 control-room release](docs/CONTROL_ROOM_0_8.md) adds dispatch, lone-worker check-ins, roster coverage and relief, offline gate capture, invoice drafts, phone health and readiness monitoring. Follow both releases' migration and acceptance steps before rollout.
 
 This repository is a source snapshot of work in development. Features, architecture plans and verification notes are documented in the codebase; they are not a claim of a completed commercial product or a production security certification. The AI name describes the project's direction, not a measured detection-accuracy claim.
 

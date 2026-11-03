@@ -136,6 +136,7 @@ final class GuardWorkflowService
             $this->allowed($data,['patrol_session_id','method','code','recorded_at']);$id=$this->id($data['patrol_session_id']??null);$session=$this->ownPatrol($id,$employee);$at=$this->date($data['recorded_at']??null);
             $column=match($data['method']??null){'QR'=>'qr_code','NFC'=>'nfc_tag',default=>throw HttpException::unprocessable('Checkpoint method must be QR or NFC.')};
             if(!is_string($data['code']??null)||$data['code']===''||strlen($data['code'])>255)throw HttpException::unprocessable('Invalid checkpoint code.');
+            if($data['method']==='NFC'){$data['code']=\Sentinel\Security\NfcUid::normalize($data['code']);$column="LOWER(REPLACE(REPLACE(REPLACE(nfc_tag,':',''),'-',''),' ',''))";}
             $rows=$this->db->fetchAll("SELECT patrol_checkpoint_id FROM patrol_checkpoints WHERE company_id=:company_id AND patrol_route_id=:route_id AND $column=:code AND status='ACTIVE' AND deleted_at IS NULL LIMIT 2",['company_id'=>$company,'route_id'=>$session['patrol_route_id'],'code'=>$data['code']]);
             if($rows===[])throw HttpException::notFound('Checkpoint not found.');if(count($rows)!==1)throw HttpException::conflict('Checkpoint code is ambiguous.');
             return $this->services->make('patrol_checkpoint_event_management_service')->recordEvent($id,['patrol_checkpoint_id'=>$rows[0]['patrol_checkpoint_id'],'recorded_at'=>$at,'event_type'=>'VISITED','event_notes'=>'Captured by '.$data['method']]);

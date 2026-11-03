@@ -29,6 +29,12 @@ final class SubscriptionPolicy
         // Recovery access is still explicitly controlled by RBAC on every plan.
         if (in_array($permission, ['support.view', 'support.manage', 'support.delegated_view', 'client_portal.read'], true)) return self::isKnownPlan($plan);
         $module = explode('.', $permission, 2)[0];
+        if($permission==='client_reports.schedule')return self::isKnownPlan($plan);
+        if($module==='client_reports')return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if($permission==='service_levels.client_read')return self::isKnownPlan($plan);
+        if(in_array($module,['site_instructions','handovers','retention'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['training','maintenance','service_levels'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['evidence','photo_reports'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
         if(in_array($module,['readiness','device_health'],true))return self::isKnownPlan($plan);
         if($module==='gate_register')return self::isKnownPlan($plan);
         if(in_array($module,['rostering','billing'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);

@@ -1,0 +1,50 @@
+<?php
+declare(strict_types=1);
+namespace Sentinel\Tests\Integration;
+use PHPUnit\Framework\TestCase;
+use Sentinel\Core\HttpException;
+use Sentinel\Services\{ReportMailTransport,ReportSchedule};
+use Sentinel\Tests\FieldFixture;
+final class PhotoReportsAndDeliveryTest extends TestCase
+{
+    private function rejects(callable $work,int $status): void {try{$work();self::fail('Expected rejection');}catch(HttpException $e){self::assertSame($status,$e->statusCode());}}
+    private function png(): string {$chunk=static fn($name,$data)=>pack('N',strlen($data)).$name.$data.pack('N',crc32($name.$data));return "\x89PNG\r\n\x1a\n".$chunk('IHDR',pack('NNCCCCC',160,100,8,2,0,0,0)).$chunk('IDAT',gzcompress(str_repeat("\x00".str_repeat("\x18\x7c\x97",160),100))).$chunk('IEND','');}
+    private function incident($db): void {$db->execute("INSERT INTO incidents(incident_uuid,company_id,site_id,incident_number,incident_type,incident_category,occurred_at,description) VALUES('photo-case',101,1,'CASE-1','FIELD','FIELD','2026-11-03 00:00:00','Internal confidential narrative')");}
+    public function testPhotoMarkupChangesPresentationWithoutChangingOriginalAndApprovalLocksIt(): void {
+        [$app,$db,$ctx]=FieldFixture::create();$this->incident($db);$e=$app->container()->make('evidence_retention_service');$p=$app->container()->make('photo_report_service');$original=$this->png();$evidence=$e->addEvidence(['incident_id'=>1,'original_filename'=>'photo.png','file_base64'=>base64_encode($original),'description'=>'Original','captured_at'=>'2026-11-03 00:00:00']);$template=$p->createTemplate(['template_name'=>'Security inspection','organisation_name'=>'Company <script>alert(1)</script>','footer_text'=>'Reviewed security observations','accent_colour'=>'#176b77','images_per_page'=>2]);$report=$p->createReport(['site_id'=>1,'template_id'=>$template['id'],'title'=>'Inspection <img src=x onerror=alert(1)>','summary'=>'Reviewed observations']);$item=$p->addItem($report['id'],['expected_revision'=>1,'evidence_id'=>$evidence['id'],'caption'=>'Caption <script>alert(1)</script>','sort_order'=>1,'annotations'=>[['kind'=>'BOX','x1'=>.1,'y1'=>.2,'x2'=>.8,'y2'=>.7,'colour'=>'#ff0000']]]);$html=$p->printable($report['id']);self::assertStringContainsString('<rect ',$html);self::assertStringNotContainsString('<script>',$html);self::assertStringContainsString('&lt;script&gt;',$html);self::assertStringContainsString(base64_encode($original),$html);self::assertSame(hash('sha256',$original),$db->fetch('SELECT sha256 FROM incident_evidence')['sha256']);self::assertSame($original,$e->download($evidence['id'])['bytes']);$this->rejects(fn()=>$p->approve($report['id'],['expected_revision'=>1]),409);$p->approve($report['id'],['expected_revision'=>2]);$this->rejects(fn()=>$p->annotate($item['id'],['expected_revision'=>3,'caption'=>'Change','annotations'=>[]]),409);$ctx->setTenantId(202);$this->rejects(fn()=>$p->printable($report['id']),404);
+    }
+    public function testMobileIncidentPhotoImportIsRetrySafeAndRetainsOriginalBytes(): void {
+        [$app,$db]=FieldFixture::create();$this->incident($db);$png=$this->png();$db->execute("INSERT INTO report_photos(company_id,report_type,report_id,image_base64,created_by_user_id) VALUES(101,'incident',1,:image,2)",['image'=>base64_encode($png)]);$p=$app->container()->make('photo_report_service');$first=$p->importFieldPhoto(['photo_id'=>1]);self::assertSame($first['id'],$p->importFieldPhoto(['photo_id'=>1])['id']);self::assertSame($png,$app->container()->make('evidence_retention_service')->download($first['id'])['bytes']);self::assertSame(1,(int)$db->fetch('SELECT COUNT(*) AS n FROM incident_evidence')['n']);
+    }
+    public function testSixHourDefaultAndCustomTimeZonesUseLocalClockSlots(): void {
+        $at=new \DateTimeImmutable('2026-11-02 22:00:00',new \DateTimeZone('UTC'));self::assertSame('2026-11-03 04:00',ReportSchedule::slot($at,'Africa/Johannesburg',ReportSchedule::DEFAULT_TIMES)->format('Y-m-d H:i'));self::assertSame('2026-11-02 16:00',ReportSchedule::slot($at,'Africa/Johannesburg',ReportSchedule::DEFAULT_TIMES,true)->format('Y-m-d H:i'));self::assertSame('2026-11-02 23:30',ReportSchedule::slot($at,'Africa/Johannesburg',['01:30','07:30','13:30','19:30'])->format('Y-m-d H:i'));$this->rejects(fn()=>ReportSchedule::times(['06:00','06:00']),422);$this->rejects(fn()=>ReportSchedule::times(['24:00']),422);$this->rejects(fn()=>ReportSchedule::zone('bad/zone'),422);
+    }
+    public function testScheduleSkipsNonexistentSpringClockTimes(): void {
+        $at=new \DateTimeImmutable('2026-03-08 06:00:00',new \DateTimeZone('UTC'));$next=ReportSchedule::slot($at,'America/New_York',['02:30']);self::assertSame('2026-03-09 06:30',$next->format('Y-m-d H:i'));
+    }
+    private function deliveryFixture(): array {
+        [$app,$db,$ctx]=FieldFixture::create();$transport=new class implements ReportMailTransport {public bool $ready=true;public bool $fail=false;public array $sent=[];public function configured():bool{return $this->ready;}public function send(string $to,string $subject,string $body,string $key):void{if($this->fail)throw new \RuntimeException('simulated network uncertainty');$this->sent[]=compact('to','subject','body','key');}};$app->container()->instance('report_mail_transport',$transport);$service=$app->container()->make('client_report_delivery_service');$db->execute('INSERT INTO client_portal_access VALUES(101,2,1)');$db->execute('ALTER TABLE patrol_sessions ADD COLUMN updated_at TEXT');return [$service,$transport,$app,$db,$ctx];
+    }
+    private function schedule($s): void {$s->save(['client_id'=>1,'expected_revision'=>0,'time_zone'=>'Africa/Johannesburg','times'=>ReportSchedule::DEFAULT_TIMES,'enabled'=>true,'auto_share_approved'=>true],true,new \DateTimeImmutable('2026-11-03 02:00:00',new \DateTimeZone('UTC')));}
+    public function testScheduledPortalAndEmailGenerationAreDeduplicatedAndExcludeInternalNarratives(): void {
+        [$s,$mail,$app,$db]=$this->deliveryFixture();$this->incident($db);$this->schedule($s);$time=new \DateTimeImmutable('2026-11-03 04:01:00',new \DateTimeZone('UTC'));self::assertSame(1,$s->generate($time)['periods_generated']);self::assertSame(0,$s->generate($time)['periods_generated']);self::assertSame(1,(int)$db->fetch('SELECT COUNT(*) AS n FROM published_site_reports')['n']);self::assertSame(1,$s->sendPending()['smtp_accepted']);self::assertSame(0,$s->sendPending()['smtp_accepted']);self::assertCount(1,$mail->sent);self::assertStringNotContainsString('Internal confidential narrative',$mail->sent[0]['body']);self::assertStringContainsString('Offline patrols may arrive later',$mail->sent[0]['body']);self::assertSame('ACCEPTED',$s->history()[0]['state']);
+    }
+    public function testClientCanChooseOwnTimesButCannotApproveSharingOrEditAnotherClient(): void {
+        [$s,$mail,$app,$db,$ctx]=$this->deliveryFixture();$this->schedule($s);$ctx->setUser('2');self::assertSame(ReportSchedule::DEFAULT_TIMES,$s->preferences()['preferences'][0]['times']);$saved=$s->save(['client_id'=>1,'expected_revision'=>1,'time_zone'=>'Africa/Johannesburg','times'=>['08:15','20:15'],'enabled'=>true]);self::assertSame(['08:15','20:15'],$saved['times']);self::assertTrue($saved['auto_share_approved']);$this->rejects(fn()=>$s->save(['client_id'=>2,'expected_revision'=>0,'enabled'=>true]),404);$this->rejects(fn()=>$s->save(['client_id'=>1,'expected_revision'=>2,'enabled'=>true,'auto_share_approved'=>true]),422);
+    }
+    public function testEmailWaitsForConfigurationAndUncertainDeliveryIsNotRetriedAutomatically(): void {
+        [$s,$mail]=$this->deliveryFixture();$this->schedule($s);$s->generate(new \DateTimeImmutable('2026-11-03 04:01:00',new \DateTimeZone('UTC')));$mail->ready=false;$s->sendPending();self::assertSame('WAITING_CONFIG',$s->history()[0]['state']);self::assertCount(0,$mail->sent);$mail->ready=true;$mail->fail=true;self::assertSame(1,$s->sendPending()['uncertain']);self::assertSame('UNCERTAIN',$s->history()[0]['state']);$mail->fail=false;$s->sendPending();self::assertCount(0,$mail->sent);$s->retry((string)$s->history()[0]['delivery_id'],['reason'=>'Supervisor reviewed the previous SMTP outcome.']);self::assertSame(1,$s->sendPending()['smtp_accepted']);
+    }
+    public function testRevokedClientMappingCancelsPendingEmail(): void {
+        [$s,$mail,$app,$db]=$this->deliveryFixture();$this->schedule($s);$s->generate(new \DateTimeImmutable('2026-11-03 04:01:00',new \DateTimeZone('UTC')));$db->execute('DELETE FROM client_portal_access');$s->sendPending();self::assertCount(0,$mail->sent);self::assertSame('CANCELLED',$s->history()[0]['state']);
+    }
+    public function testNfcUidAcceptsHardwareFormatsAndRejectsSymbolicLabels(): void {
+        self::assertSame('04a1b2c3d4e5f6',\Sentinel\Security\NfcUid::normalize('04:A1:B2:C3:D4:E5:F6'));self::assertSame('aabbccdd',\Sentinel\Security\NfcUid::normalize('AA BB CC DD'));$this->rejects(fn()=>\Sentinel\Security\NfcUid::normalize('NFC-GATE'),422);$this->rejects(fn()=>\Sentinel\Security\NfcUid::normalize('001'),422);
+    }
+    public function testLateOfflineCompletionsAppearInTheNextReceivedUpdateSummary(): void {
+        [$s,$mail,$app,$db]=$this->deliveryFixture();$db->execute('INSERT INTO patrol_routes VALUES(1,101,1)');$db->execute("INSERT INTO patrol_sessions(patrol_session_id,company_id,patrol_route_id,started_at,status,updated_at) VALUES(1,101,1,'2026-11-02 18:00:00','COMPLETED','2026-11-03 01:00:00')");$this->schedule($s);$s->generate(new \DateTimeImmutable('2026-11-03 04:01:00',new \DateTimeZone('UTC')));$s->sendPending();self::assertStringContainsString('including late offline uploads): 1',$mail->sent[0]['body']);
+    }
+    public function testPausingAClientScheduleCancelsUnsentEmail(): void {
+        [$s,$mail]=$this->deliveryFixture();$this->schedule($s);$s->generate(new \DateTimeImmutable('2026-11-03 04:01:00',new \DateTimeZone('UTC')));$s->save(['client_id'=>1,'expected_revision'=>1,'enabled'=>false,'auto_share_approved'=>true],true);$s->sendPending();self::assertCount(0,$mail->sent);self::assertSame('CANCELLED',$s->history()[0]['state']);
+    }
+}

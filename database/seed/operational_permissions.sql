@@ -227,6 +227,52 @@ SELECT 'readiness.view' AS permission_code, 'readiness' AS module_name, 'view' A
 UNION ALL
 SELECT 'readiness.manage' AS permission_code, 'readiness' AS module_name, 'manage' AS action_name
 UNION ALL
+SELECT 'site_instructions.view' AS permission_code, 'site_instructions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_instructions.manage' AS permission_code, 'site_instructions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'handovers.view' AS permission_code, 'handovers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'handovers.manage' AS permission_code, 'handovers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'training.view' AS permission_code, 'training' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'training.manage' AS permission_code, 'training' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.view' AS permission_code, 'evidence' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_levels.manage' AS permission_code, 'service_levels' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'maintenance.view' AS permission_code, 'maintenance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'maintenance.manage' AS permission_code, 'maintenance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'retention.view' AS permission_code, 'retention' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'retention.manage' AS permission_code, 'retention' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.export' AS permission_code, 'evidence' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'service_levels.client_read' AS permission_code, 'service_levels' AS module_name, 'client_read' AS action_name
+UNION ALL
+SELECT 'retention.hold' AS permission_code, 'retention' AS module_name, 'hold' AS action_name
+UNION ALL
+SELECT 'photo_reports.view' AS permission_code, 'photo_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'photo_reports.manage' AS permission_code, 'photo_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'photo_reports.export' AS permission_code, 'photo_reports' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'client_reports.view' AS permission_code, 'client_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_reports.manage' AS permission_code, 'client_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_reports.schedule' AS permission_code, 'client_reports' AS module_name, 'schedule' AS action_name
+UNION ALL
 SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
@@ -507,6 +553,52 @@ UNION ALL
 SELECT 'readiness.view' AS permission_code, 'readiness' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'readiness.manage' AS permission_code, 'readiness' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_instructions.view' AS permission_code, 'site_instructions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_instructions.manage' AS permission_code, 'site_instructions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'handovers.view' AS permission_code, 'handovers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'handovers.manage' AS permission_code, 'handovers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'training.view' AS permission_code, 'training' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'training.manage' AS permission_code, 'training' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.view' AS permission_code, 'evidence' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_levels.manage' AS permission_code, 'service_levels' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'maintenance.view' AS permission_code, 'maintenance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'maintenance.manage' AS permission_code, 'maintenance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'retention.view' AS permission_code, 'retention' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'retention.manage' AS permission_code, 'retention' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.export' AS permission_code, 'evidence' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'service_levels.client_read' AS permission_code, 'service_levels' AS module_name, 'client_read' AS action_name
+UNION ALL
+SELECT 'retention.hold' AS permission_code, 'retention' AS module_name, 'hold' AS action_name
+UNION ALL
+SELECT 'photo_reports.view' AS permission_code, 'photo_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'photo_reports.manage' AS permission_code, 'photo_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'photo_reports.export' AS permission_code, 'photo_reports' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'client_reports.view' AS permission_code, 'client_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_reports.manage' AS permission_code, 'client_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_reports.schedule' AS permission_code, 'client_reports' AS module_name, 'schedule' AS action_name
 UNION ALL
 SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
 UNION ALL

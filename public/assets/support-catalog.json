@@ -1,5 +1,19 @@
 [
   {
+    "id": "photo_reports_and_delivery",
+    "title": "Photo reports and client delivery schedules",
+    "symptom": "Missing report photos, stale draft revision, missed local delivery slot or email waiting/uncertain",
+    "remedy": "Apply schemas 070 and 071. Check evidence availability, report revision and role permissions. Configure the client schedule/time zone and approve aggregate sharing. Run the client report worker every minute and configure TLS SMTP on the server. Review UNCERTAIN mail before retrying; SMTP acceptance is not an inbox/read receipt.",
+    "manual": "Test a branded printable photo report with non-destructive annotations, original hashes, duplicate generation, custom local times and DST, offline patrol uploads, revoked client mappings, SMTP failure and restart after ambiguous delivery."
+  },
+  {
+    "id": "site_assurance",
+    "title": "Site instructions, training, evidence and retention",
+    "symptom": "Outdated instructions, missing handovers, qualification gaps, evidence integrity failures or blocked cleanup",
+    "remedy": "Apply schema 069 and review role permissions. Check the exact instruction revision, receiving shift, qualification verification/expiry and ticket revision. Preserve a damaged evidence file and investigate its hash failure. Review incident/record holds and create a fresh retention preview with an MFA-authenticated operator.",
+    "manual": "Exercise separate guard/manager/client accounts, instruction revisions, a handover discrepancy, overnight training expiry, independent repair verification, original evidence download/export and a disposable retention batch under a hold. Verify physical procedures, backup/restore and MySQL concurrency before production."
+  },
+  {
     "id": "control_room",
     "title": "Dispatch, check-ins and operational readiness",
     "symptom": "Missing response acknowledgements, overdue check-ins, coverage gaps or stale worker health",

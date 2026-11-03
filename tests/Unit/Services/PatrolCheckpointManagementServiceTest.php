@@ -40,15 +40,16 @@ final class PatrolCheckpointManagementServiceTest extends TestCase
             'checkpoint_name' => 'Parking',
             'checkpoint_order' => 2,
             'qr_code' => 'QR-2',
-            'nfc_tag' => 'NFC-2',
+            'nfc_tag' => '04:A1:B2:C3:D4:E5:F6',
             'gps_lat' => -90,
             'gps_long' => 180,
             'expected_interval_minutes' => 10,
         ]);
 
         self::assertSame('QR-2', $checkpoint['qr_code']);
-        self::assertSame('NFC-2', $checkpoint['nfc_tag']);
+        self::assertSame('04a1b2c3d4e5f6', $checkpoint['nfc_tag']);
         self::assertSame('ACTIVE', $checkpoint['status']);
+        try{$service->createCheckpoint(['patrol_route_id'=>1,'checkpoint_name'=>'Duplicate tag','checkpoint_order'=>3,'nfc_tag'=>'04 a1 b2 c3 d4 e5 f6']);self::fail('Expected duplicate NFC rejection.');}catch(HttpException $e){self::assertSame(409,$e->statusCode());}
     }
 
     public function testRejectsCrossTenantRouteBadPostSequenceCoordinatesAndStatus(): void
