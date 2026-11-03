@@ -9,6 +9,7 @@ use Sentinel\Core\Router;
 
 return static function (Router $router, Container $container): void {
     (require __DIR__.'/field.php')($router,$container);
+    (require __DIR__.'/control-room.php')($router,$container);
     // Installation credential authenticates this endpoint; no customer records returned.
     // Apply edge rate limits. Never log request bodies on this credential endpoint.
     $router->post('/api/v1/managed-device/policy', static fn (Request $request): Response => Response::json(['data'=>$container->make('managed_android_service')->poll($request->json())])->withHeader('Cache-Control','no-store'));

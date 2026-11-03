@@ -201,6 +201,32 @@ SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS ac
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
 UNION ALL
+SELECT 'dispatch.view' AS permission_code, 'dispatch' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'dispatch.manage' AS permission_code, 'dispatch' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lone_worker.view' AS permission_code, 'lone_worker' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lone_worker.manage' AS permission_code, 'lone_worker' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'rostering.view' AS permission_code, 'rostering' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'rostering.manage' AS permission_code, 'rostering' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'gate_register.view' AS permission_code, 'gate_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'gate_register.manage' AS permission_code, 'gate_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'billing.view' AS permission_code, 'billing' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'billing.manage' AS permission_code, 'billing' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'device_health.view' AS permission_code, 'device_health' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.view' AS permission_code, 'readiness' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.manage' AS permission_code, 'readiness' AS module_name, 'manage' AS action_name
+UNION ALL
 SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
@@ -455,6 +481,32 @@ UNION ALL
 SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS action_name
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
+UNION ALL
+SELECT 'dispatch.view' AS permission_code, 'dispatch' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'dispatch.manage' AS permission_code, 'dispatch' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lone_worker.view' AS permission_code, 'lone_worker' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lone_worker.manage' AS permission_code, 'lone_worker' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'rostering.view' AS permission_code, 'rostering' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'rostering.manage' AS permission_code, 'rostering' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'gate_register.view' AS permission_code, 'gate_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'gate_register.manage' AS permission_code, 'gate_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'billing.view' AS permission_code, 'billing' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'billing.manage' AS permission_code, 'billing' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'device_health.view' AS permission_code, 'device_health' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.view' AS permission_code, 'readiness' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.manage' AS permission_code, 'readiness' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
 UNION ALL

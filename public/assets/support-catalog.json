@@ -1,5 +1,12 @@
 [
   {
+    "id": "control_room",
+    "title": "Dispatch, check-ins and operational readiness",
+    "symptom": "Missing response acknowledgements, overdue check-ins, coverage gaps or stale worker health",
+    "remedy": "Apply schema 068, seed explicit permissions and run the control-room worker every minute before the escalation worker. Refresh the dispatch, roster, gate, billing and readiness pages. Check installation contact time and reported policy revision. Backup entries are operator evidence, not a performed restoration.",
+    "manual": "On staging, exercise responder acceptance/arrival, a missed check-in and duress code, relief conflicts, offline gate replay, invoice changes after attendance correction and worker failure. Confirm phone/radio fallback and physical device behaviour with the operator."
+  },
+  {
     "id": "accounts_and_access",
     "title": "Accounts and permissions",
     "symptom": "Cannot sign in, Forbidden, or missing menus",

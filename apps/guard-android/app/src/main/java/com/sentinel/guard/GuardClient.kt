@@ -73,7 +73,9 @@ class GuardClient(context: Context) {
         val s = session() ?: throw ApiFailure(401, "Sign in required")
         val data = request(s.base, s.token, "/guard/workspace").getJSONObject("data")
         require(data.getString("user_id") == s.user) { "Account changed; sign in again" }
-        secure.put("workspace_${s.account}", data.toString()); return data
+        secure.put("workspace_${s.account}", data.toString())
+        try { uploadPhoneHealth() } catch(_:Exception) { /* Health never blocks duty synchronization. */ }
+        return data
     }
     fun patrolDetails(id:String):JSONObject {
         val current=session()?:throw ApiFailure(401,"Sign in again.")
@@ -118,6 +120,15 @@ class GuardClient(context: Context) {
         while(history.length()>50)history.remove(0)
         secure.put("queue_recovery_${s.account}",history.toString())
         queue.writableDatabase.execSQL("UPDATE queue SET blocked=0 WHERE account=? AND blocked=1",arrayOf(s.account))
+    }
+    fun controlRoom(): JSONObject {val s=session()?:throw ApiFailure(401,"Sign in required");return request(s.base,s.token,"/guard/control-room").getJSONObject("data")}
+    fun responseAction(id:String,action:String,revision:Int) {require(action in listOf("accept","arrive"));val s=session()?:throw ApiFailure(401,"Sign in required");request(s.base,s.token,"/guard/dispatch/$id/$action",JSONObject().put("expected_revision",revision))}
+    fun checkin(id:String,code:String) {val s=session()?:throw ApiFailure(401,"Sign in required");request(s.base,s.token,"/guard/checkins/$id",JSONObject().put("code",code))}
+    fun uploadPhoneHealth() {
+        val s=session()?:return
+        val battery=appContext.getSystemService(android.os.BatteryManager::class.java).getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        if(battery !in 0..100)return
+        request(s.base,s.token,"/guard/phone-health",JSONObject().put("installation_id",installationId()).put("battery_percent",battery).put("version_code",BuildConfig.VERSION_CODE))
     }
     fun uploadDiagnostics() {
         val s=session()?:throw ApiFailure(401,"Sign in required")

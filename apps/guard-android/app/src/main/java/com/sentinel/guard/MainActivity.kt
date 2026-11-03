@@ -223,6 +223,8 @@ class MainActivity : Activity() {
         button("Patrol history",::historyScreen)
         button("Report incident") { chooseReportShift("incident") }
         button("Occurrence book / handover") { chooseReportShift("occurrence") }
+        button("My response and check-ins",::controlRoomScreen)
+        button("Visitor / vehicle gate capture",::gateShiftScreen)
         button("Offline queue and diagnostics",::queueScreen)
         button("Enrol company-managed phone",::managedDeviceScreen)
         button("Open manager dashboard") { client.adminUrl()?.let{startActivity(Intent(Intent.ACTION_VIEW,android.net.Uri.parse(it)))} }
@@ -442,6 +444,54 @@ class MainActivity : Activity() {
         val recovery=field("Supervisor offline recovery code",true)
         button("Release restrictions with recovery code"){val value=recovery.text.toString();recovery.text.clear();try{controller.recover(this,value);notice.text="Restrictions released. Administrator must send a new revision to re-enable management.";reportManagedPolicyState()}catch(e:Exception){notice.text=e.message}}
         button("Back"){if(client.session()==null)loginScreen()else home()}
+    }
+    private fun controlRoomScreen(){
+        background {
+            val data=client.controlRoom()
+            runOnUiThread {
+                screen("My response and check-ins")
+                text("Live connection required. If a submission fails, contact your control room by radio or phone. This screen does not run a background emergency alarm.")
+                val dispatch=data.getJSONArray("dispatch")
+                for(i in 0 until dispatch.length()){
+                    val job=dispatch.getJSONObject(i);val id=job.getString("dispatch_id")
+                    text("Response #$id · incident ${job.optString("incident_id")} · ${job.optString("state")} · due ${job.optString("response_due_at")} UTC")
+                    val action=when(job.optString("state")){"ASSIGNED"->"accept";"ACCEPTED"->"arrive";else->null}
+                    if(action!=null)button("Record $action #$id"){background{client.responseAction(id,action,job.getInt("revision"));runOnUiThread{controlRoomScreen()}}}
+                }
+                val plans=data.getJSONArray("checkins")
+                for(i in 0 until plans.length()){
+                    val plan=plans.getJSONObject(i);val id=plan.getString("plan_id")
+                    text("Check-in #$id · due ${plan.optString("next_due_at")} UTC · ends ${plan.optString("ends_at")} UTC")
+                    val code=field("Check-in code",true);code.setText("OK")
+                    button("Submit check-in #$id"){val value=code.text.toString();code.text.clear();background{client.checkin(id,value);runOnUiThread{controlRoomScreen();notice.text="Check-in received by server."}}}
+                }
+                if(dispatch.length()==0&&plans.length()==0)text("No active response assignments or check-in plans.")
+                button("Refresh",::controlRoomScreen);button("Back",::home)
+            }
+        }
+    }
+    private fun gateShiftScreen(){
+        val shifts=rows("shifts").filter{it.optString("assignment_status") in listOf("ASSIGNED","CONFIRMED","IN_PROGRESS")}
+        if(shifts.isEmpty()){notice.text="Synchronize an assigned shift before gate capture.";return}
+        AlertDialog.Builder(this).setTitle("Choose gate duty shift").setItems(shifts.map{"${it.optString("shift_name")} ${it.optString("assignment_date")}"}.toTypedArray()){_,i->gateScreen(shifts[i])}.show()
+    }
+    private fun gateScreen(shift:JSONObject){
+        screen("Visitor / vehicle gate capture")
+        text("Capture a movement or delivery for your assigned site. Offline records cannot verify blocked-person lists or authorisation. Follow company gate procedures. Records remain encrypted until server sync.")
+        val at=field("UTC event time (yyyy-MM-dd HH:mm:ss)");at.setText(now())
+        val name=field("Visitor or delivery contact name")
+        val vehicle=field("Vehicle registration (optional)")
+        val purpose=field("Purpose / delivery reference")
+        val direction=Spinner(this);direction.adapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,listOf("ENTRY","EXIT"));layout.addView(direction)
+        val authorization=Spinner(this);authorization.adapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,listOf("PENDING","AUTHORIZED","DENIED"));layout.addView(authorization)
+        val uuid=java.util.UUID.randomUUID().toString();var saved=false
+        button("Save encrypted gate capture and synchronize"){
+            if(saved)return@button
+            if(name.text.isBlank()||purpose.text.isBlank()||name.text.length>150||purpose.text.length>500||vehicle.text.length>30){notice.text="Enter a name and purpose within the field limits.";return@button}
+            saved=true
+            enqueue("gate_capture",JSONObject().put("capture_uuid",uuid).put("shift_assignment_id",shift.get("shift_assignment_id")).put("visitor_name",name.text.toString().trim()).put("vehicle_registration",vehicle.text.toString().trim()).put("purpose",purpose.text.toString().trim()).put("direction",direction.selectedItem.toString()).put("authorization",authorization.selectedItem.toString()).put("occurred_at",at.text.toString().trim()))
+        }
+        button("Cancel",::home)
     }
     private fun chooseReportShift(action:String){
         val shifts=rows("shifts").filter{it.optString("assignment_status")!="CANCELLED"}

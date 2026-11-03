@@ -28,7 +28,7 @@ final class FieldFixture
             'patrol_checkpoint_events(company_id INTEGER,patrol_session_id INTEGER,patrol_checkpoint_id INTEGER,event_type TEXT,recorded_at TEXT)',
             'patrol_schedule_windows(patrol_schedule_id INTEGER,company_id INTEGER,patrol_route_id INTEGER,shift_assignment_id INTEGER,starts_at TEXT,ends_at TEXT,cancelled_at TEXT)',
         ]as$table)$db->execute('CREATE TABLE '.$table);
-        foreach(['056_incidents.sql','057_occurrence_book.sql','061_alerts.sql','062_notifications.sql','063_mobile_operations.sql','066_field_operations_release.sql','067_managed_android.sql']as$file)self::loadSchema($db,$file);
+        foreach(['056_incidents.sql','057_occurrence_book.sql','061_alerts.sql','062_notifications.sql','063_mobile_operations.sql','066_field_operations_release.sql','067_managed_android.sql','068_control_room.sql']as$file)self::loadSchema($db,$file);
         $db->execute('INSERT INTO companies VALUES(101),(202)');$password=password_hash('test-password-at-least-12',PASSWORD_DEFAULT);
         foreach([[1,101],[2,101],[3,202]]as[$id,$company]){$db->execute("INSERT INTO employees VALUES(:id,:company,'ACTIVE')",['id'=>$id,'company'=>$company]);$db->execute("INSERT INTO users VALUES(:id,:company,:employee,:username,:email,:password,'ACTIVE')",['id'=>$id,'company'=>$company,'employee'=>$id,'username'=>'user'.$id,'email'=>'user'.$id.'@example.test','password'=>$password]);}
         $db->execute('INSERT INTO clients VALUES(1,101),(2,101),(3,202)');$db->execute("INSERT INTO sites VALUES(1,101,1,'Own site',NULL),(2,101,2,'Second client',NULL),(3,202,3,'Other company',NULL)");

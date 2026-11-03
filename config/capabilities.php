@@ -11,6 +11,7 @@ return [
     ],
     'support' => ['view' => 'Tenant diagnostics and sanitised export', 'manage' => 'Audited compromised-account containment'],
     'field_operations' => ['compliance', 'equipment', 'client_portal', 'payroll_export', 'escalations'],
+    'control_room' => ['dispatch', 'lone_worker', 'rostering', 'gate_register', 'billing', 'device_health', 'readiness'],
     'managed_android' => ['permissions' => ['managed_android.view', 'managed_android.manage'], 'enforcement' => 'Provisioned company device owner; management requires MFA'],
     'policy_class' => Sentinel\Services\SubscriptionPolicy::class,
 ];

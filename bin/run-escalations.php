@@ -12,5 +12,8 @@ try{
     $context->setTenantId($company);$context->setUser((string)$operator);
     if(!$db->fetch("SELECT user_id FROM users WHERE company_id=:company AND user_id=:user AND status='ACTIVE'",['company'=>$company,'user'=>$operator]))throw new \RuntimeException('Invalid worker operator.');
     $app->container()->make('authorization_service')->requirePermission((string)$operator,'escalations.manage');
-    $db->beginTransaction();$result=$app->container()->make('field_operations_service')->escalationTick();$db->commit();echo json_encode($result,JSON_THROW_ON_ERROR).PHP_EOL;
-}catch(\Throwable){if($db->inTransaction())$db->rollBack();fwrite(STDERR,"Escalation worker failed. Check service health and audit availability; no partial notifications committed.\n");exit(1);}
+    $authorised=true;
+    $db->beginTransaction();$result=$app->container()->make('field_operations_service')->escalationTick();
+    $db->execute("INSERT INTO worker_runs(company_id,worker_name,started_at,finished_at,state,summary) VALUES(:company,'escalations',:start,:end,'OK','In-app escalation evaluation completed.')",['company'=>$company,'start'=>gmdate('Y-m-d H:i:s'),'end'=>gmdate('Y-m-d H:i:s')]);
+    $db->commit();echo json_encode($result,JSON_THROW_ON_ERROR).PHP_EOL;
+}catch(\Throwable){if($db->inTransaction())$db->rollBack();if(isset($authorised)&&$authorised)try{$app->container()->make('control_room_service')->recordWorkerFailure('escalations');}catch(\Throwable){}fwrite(STDERR,"Escalation worker failed. Check service health and audit availability; no partial notifications committed.\n");exit(1);}

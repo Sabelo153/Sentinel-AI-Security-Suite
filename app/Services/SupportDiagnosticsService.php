@@ -30,6 +30,7 @@ final class SupportDiagnosticsService
         'geofencing' => ['geofences', 'gps_locations', 'gps_events'],
         'account_security' => ['security_sessions','account_mfa','support_grants'],
         'managed_android' => ['managed_android'],
+        'control_room' => ['dispatch_jobs','lone_worker_plans','lone_worker_events','coverage_requirements','shift_relief_history','gate_register','contract_hourly_rates','invoice_drafts','operational_signals','worker_runs','backup_checks','phone_health'],
         'compliance' => ['compliance_items'],
         'equipment_handovers' => ['equipment_items','equipment_handovers'],
         'client_portal' => ['client_portal_access','published_site_reports'],

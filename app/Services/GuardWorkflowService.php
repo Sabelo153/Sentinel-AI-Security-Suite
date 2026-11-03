@@ -46,11 +46,15 @@ final class GuardWorkflowService
     {
         $this->allowed($input,['operation_uuid','action','data']);
         if(!is_string($input['operation_uuid']??null)||preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/Di',$input['operation_uuid'])!==1)throw HttpException::unprocessable('A stable operation UUID is required.');
-        if(!is_array($input['data']??null)||!in_array($input['action']??null,['clock_in','clock_out','start_patrol','finish_patrol','checkpoint','location','incident','occurrence'],true))throw HttpException::unprocessable('Invalid guard command.');
+        if(!is_array($input['data']??null)||!in_array($input['action']??null,['clock_in','clock_out','start_patrol','finish_patrol','checkpoint','location','incident','occurrence','gate_capture'],true))throw HttpException::unprocessable('Invalid guard command.');
         $data=$input['data'];ksort($data);$hash=hash('sha256',json_encode([$input['action'],$data],JSON_THROW_ON_ERROR));
         return $this->safe(function()use($input,$data,$hash):array{
             $owns=!$this->db->inTransaction();if($owns)$this->db->beginTransaction();
             try{
+                // Match roster/relief lock ordering before taking the actor lock or
+                // reading a shift. A simultaneous relief cannot leave attendance
+                // attached to the employee who was just replaced.
+                if($this->db->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME)==='mysql')$this->db->fetch('SELECT company_id FROM companies WHERE company_id=:company FOR UPDATE',['company'=>$this->context->requireTenant()]);
                 // Lock this actor before retry lookup and command execution to serialize retries.
                 $actor=$this->actor(true);$params=['company_id'=>$this->context->requireTenant(),'user_id'=>$actor['user_id'],'operation_uuid'=>strtolower($input['operation_uuid'])];
                 $receipt=$this->db->fetch('SELECT request_hash,response_json FROM mobile_operations WHERE company_id=:company_id AND user_id=:user_id AND operation_uuid=:operation_uuid',$params);
@@ -71,6 +75,15 @@ final class GuardWorkflowService
     private function execute(string $action,array $data,array $actor):array
     {
         $employee=(string)$actor['employee_id'];$company=$this->context->requireTenant();
+        if($action==='gate_capture'){
+            $this->allowed($data,['capture_uuid','shift_assignment_id','visitor_name','vehicle_registration','purpose','direction','authorization','occurred_at']);
+            $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);
+            if($shift['assignment_status']==='CANCELLED')throw HttpException::conflict('Shift is cancelled.');
+            $at=$this->date($data['occurred_at']??null);
+            if($at<$shift['shift_start_at']||$at>$shift['shift_end_at'])throw HttpException::unprocessable('Gate capture must fall within the assigned shift.');
+            $capture=$data;unset($capture['capture_uuid'],$capture['shift_assignment_id']);
+            return $this->services->make('control_room_service')->gate($capture+['operation_uuid'=>$data['capture_uuid']??null,'site_id'=>$shift['site_id']]);
+        }
         if(in_array($action,['incident','occurrence'],true)){
             $this->allowed($data,['shift_assignment_id','occurred_at','text','severity','photo_base64']);
             $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);
