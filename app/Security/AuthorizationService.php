@@ -37,6 +37,7 @@ final class AuthorizationService
             'site_workspace.view','inspection_forms.view','inspection_forms.manage',
             'client_requests.view','client_requests.manage','client_requests.client',
             'report_reviews.view','report_reviews.client','availability.self','users.password_change',
+            'key_register.view','key_register.manage','key_register.self','emergency_procedures.view','emergency_procedures.manage','workflow_languages.self','workflow_languages.view','company_branding.read',
         ],true);
         return true;
     }

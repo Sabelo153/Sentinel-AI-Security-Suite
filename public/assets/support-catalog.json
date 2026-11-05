@@ -208,5 +208,12 @@
     "remedy": "Apply schema 072 after 071, seed the new permissions for the selected company and grant each workflow explicitly. A site restriction marker is never granted to owners automatically. Check client portal mappings, site grants and current revisions.",
     "manual": "Required inspection photos and failed checks need supervisor review. Only mapped clients can acknowledge reports, confirm resolved requests and decide quotations. Arrange relief before approving leave. Complete mobilisation evidence before activating a site.",
     "symptom": "Missing workflow tables, incorrect site access, stale revision, blocked leave or incomplete mobilisation"
+  },
+  {
+    "id": "operational_readiness",
+    "title": "Offline inspections, key custody and operational readiness",
+    "symptom": "Offline queue pending, key return incomplete, no eligible replacement, stale translation or incomplete onboarding",
+    "remedy": "Apply schema 073, deploy matching browser assets and seed tenant permissions. Download forms online before offline use; unlock the correct account vault. Reconnect with the same login and retain NEEDS_REVIEW submissions. Review training, approved absence, rest and weekly-hour preferences before selecting replacements.",
+    "manual": "Key/card signatures are logged handover attestations. Verify physical return and lost-card containment. Review translated procedures with a fluent operator; missing/stale content falls back to English. Emergency records do not call responders. Subscription changes are recorded requests; account administration handles activation."
   }
 ]

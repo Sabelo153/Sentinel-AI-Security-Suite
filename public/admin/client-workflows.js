@@ -60,6 +60,7 @@
           }
           note('Use a dedicated supervisor or contractor role. Grant its normal workflow permissions, enable its restriction, then assign sites. With no assigned sites it has no site access. The restriction also applies when the user has other roles.');
         } else if(view==='inspection-forms') {
+          const offline=node('a','Open passphrase-protected offline inspections');offline.href='offline-inspections.html';root.append(offline);note('Prepare the offline page and download forms while connected before leaving coverage.');
           sitePicker(async site=>{
             const forms=await get('/inspection-forms?site_id='+site);show('Latest form revisions',forms.map(({fields_json,...r})=>r));
             if(can('inspection_forms.manage')) {

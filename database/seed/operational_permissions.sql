@@ -245,6 +245,32 @@ SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage'
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
 UNION ALL
+SELECT 'key_register.view' AS permission_code, 'key_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'key_register.manage' AS permission_code, 'key_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'key_register.self' AS permission_code, 'key_register' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.view' AS permission_code, 'replacement_suggestions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.manage' AS permission_code, 'replacement_suggestions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.view' AS permission_code, 'emergency_procedures' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.manage' AS permission_code, 'emergency_procedures' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'workflow_languages.self' AS permission_code, 'workflow_languages' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'workflow_languages.view' AS permission_code, 'workflow_languages' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'workflow_languages.manage' AS permission_code, 'workflow_languages' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'company_branding.read' AS permission_code, 'company_branding' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'company_workspace.view' AS permission_code, 'company_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'company_workspace.manage' AS permission_code, 'company_workspace' AS module_name, 'manage' AS action_name
+UNION ALL
 SELECT 'site_access.view' AS permission_code, 'site_access' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'site_access.manage' AS permission_code, 'site_access' AS module_name, 'manage' AS action_name
@@ -605,6 +631,32 @@ UNION ALL
 SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'key_register.view' AS permission_code, 'key_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'key_register.manage' AS permission_code, 'key_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'key_register.self' AS permission_code, 'key_register' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.view' AS permission_code, 'replacement_suggestions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.manage' AS permission_code, 'replacement_suggestions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.view' AS permission_code, 'emergency_procedures' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.manage' AS permission_code, 'emergency_procedures' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'workflow_languages.self' AS permission_code, 'workflow_languages' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'workflow_languages.view' AS permission_code, 'workflow_languages' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'workflow_languages.manage' AS permission_code, 'workflow_languages' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'company_branding.read' AS permission_code, 'company_branding' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'company_workspace.view' AS permission_code, 'company_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'company_workspace.manage' AS permission_code, 'company_workspace' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'site_access.view' AS permission_code, 'site_access' AS module_name, 'view' AS action_name
 UNION ALL

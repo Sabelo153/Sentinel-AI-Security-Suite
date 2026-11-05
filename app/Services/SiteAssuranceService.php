@@ -6,7 +6,7 @@ use Sentinel\Core\{Database,HttpException,RuntimeContext};
 final class SiteAssuranceService
 {
     use TenantOperations;
-    public function __construct(private readonly Database $db,private readonly RuntimeContext $context,private readonly AuditService $audit) {}
+    public function __construct(private readonly Database $db,private readonly RuntimeContext $context,private readonly AuditService $audit,private readonly ?WorkflowLanguageService $languages=null) {}
 
     public function list(string $resource): array {
         $queries=[
@@ -37,6 +37,7 @@ final class SiteAssuranceService
         $employee=$this->employee();$instructions=$this->db->fetchAll("SELECT DISTINCT v.instruction_id,v.site_id,v.revision,v.title,v.instructions,v.emergency_contacts,v.published_at FROM site_instruction_versions v JOIN shift_assignments s ON s.company_id=v.company_id AND s.site_id=v.site_id WHERE v.company_id=:company AND s.employee_id=:employee AND s.deleted_at IS NULL AND s.assignment_status IN ('ASSIGNED','CONFIRMED','IN_PROGRESS') AND s.shift_end_at>=:now AND s.shift_start_at<=:until AND NOT EXISTS(SELECT 1 FROM site_instruction_versions newer WHERE newer.company_id=v.company_id AND newer.site_id=v.site_id AND newer.revision>v.revision) ORDER BY v.site_id LIMIT 100",['company'=>$this->company(),'employee'=>$employee,'now'=>gmdate('Y-m-d H:i:s'),'until'=>gmdate('Y-m-d H:i:s',time()+7*86400)]);
         foreach($instructions as&$v)$v['acknowledged']=(bool)$this->db->fetch('SELECT acknowledgement_id FROM site_instruction_acknowledgements WHERE company_id=:company AND instruction_id=:id AND user_id=:actor',['company'=>$this->company(),'id'=>$v['instruction_id'],'actor'=>$this->actor()]);unset($v);
         $handovers=$this->db->fetchAll('SELECT * FROM shift_handovers WHERE company_id=:company AND (sender_employee_id=:sender OR receiver_employee_id=:receiver) ORDER BY handover_id DESC LIMIT 100',['company'=>$this->company(),'sender'=>$employee,'receiver'=>$employee]);foreach($handovers as&$h)$h['can_accept']=$h['accepted_at']===null&&(string)$h['receiver_employee_id']===$employee;unset($h);
+        if($this->languages!==null)foreach($instructions as&$instruction){$t=$this->languages->read(['entity_kind'=>'INSTRUCTION','entity_id'=>$instruction['instruction_id']],true);$instruction=array_merge($instruction,$t['content'],['display_language'=>$t['display_language'],'translation_fallback'=>$t['fallback']]);}unset($instruction);
         return ['instructions'=>$instructions,'handovers'=>$handovers,'training'=>$this->db->fetchAll('SELECT t.training_id,t.competency_id,c.competency_name,t.valid_from,t.valid_until,t.verified_at,t.revoked_at FROM employee_training t JOIN training_competencies c ON c.company_id=t.company_id AND c.competency_id=t.competency_id WHERE t.company_id=:company AND t.employee_id=:employee ORDER BY t.valid_until LIMIT 200',['company'=>$this->company(),'employee'=>$employee])];
     }
     public function createHandover(array $input,bool $self=false): array {return $this->atomic(function()use($input,$self){

@@ -27,8 +27,7 @@ includes protected photo controls and failed-check tasks.
 Submissions use a stable operation UUID. Retrying an unchanged accepted submission
 returns its receipt without creating another task or photo. Reusing the UUID with
 changed answers is rejected. The browser preserves the submitted payload for a
-retry while that page remains open. These custom forms require a connection;
-they do not use the Android patrol queue.
+retry while that page remains open. The 0.10 form page requires a connection. [Release 0.11](OPERATIONAL_READINESS_0_11.md) adds a separate encrypted browser vault for offline forms and photos; it remains separate from the Android patrol queue.
 
 ## Client requests and complaints
 
