@@ -24,6 +24,8 @@ The preceding [Sentinel 0.8 control-room release](docs/CONTROL_ROOM_0_8.md) adds
 
 This repository is a source snapshot of work in development. Features, architecture plans and verification notes are documented in the codebase; they are not a claim of a completed commercial product or a production security certification. The AI name describes the project's direction, not a measured detection-accuracy claim.
 
+The [UI integration review](docs/UI_INTEGRATION_REVIEW.md) documents the combined navigation, role-aware forms, site selection, responsive layouts and real-API browser verification.
+
 ## What is in the source
 - PHP application framework, API routes, authentication and role-based access components.
 - MySQL/MariaDB schema and migrations for security operations.

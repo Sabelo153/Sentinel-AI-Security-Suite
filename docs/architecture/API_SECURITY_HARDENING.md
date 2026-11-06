@@ -19,7 +19,7 @@ The active root application uses `company_id` as its only tenant discriminator. 
 
 ## Input and Response Controls
 
-JSON bodies are limited by `MAX_JSON_BODY_BYTES` (default: 1 MiB), reject explicit non-JSON content types, and reject malformed JSON. Request-facing services validate explicit field allowlists. User responses use a safe projection; RBAC and telemetry repositories use explicit column projections rather than `SELECT *`.
+JSON bodies are limited by `MAX_JSON_BODY_BYTES` (default: 4 MiB, to accommodate bounded base64 photos), reject explicit non-JSON content types, and reject malformed JSON. Request-facing services validate explicit field allowlists. User responses use a safe projection; RBAC and telemetry repositories use explicit column projections rather than `SELECT *`.
 
 ## Pagination
 

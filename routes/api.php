@@ -81,8 +81,9 @@ return static function (Router $router, Container $container): void {
             $allowed[$permission] = true;
             if (in_array('GET', $route['methods'], true)) $routes[] = $route['path'];
         }
-        return Response::json(['data'=>['permissions'=>array_keys($allowed), 'read_paths'=>array_values(array_unique($routes))]])->withHeader('Cache-Control', 'no-store');
+        return Response::json(['data'=>['user_id'=>(string)$context->user(),'company_id'=>(string)$context->requireTenant(),'permissions'=>array_keys($allowed), 'read_paths'=>array_values(array_unique($routes))]])->withHeader('Cache-Control', 'no-store');
     }, ['auth'=>true, 'tenant'=>true]);
+    $router->get('/api/v1/auth/workspace-sites',static function()use($container):Response{return Response::json(['data'=>$container->make('site_access_service')->workspaceSites($container->make('authorization_service'))])->withHeader('Cache-Control','no-store');},['auth'=>true,'tenant'=>true]);
 	$router->get('/api/v1/auth/me', static function () use ($container): Response {
 		$context = $container->make('runtime_context');
 

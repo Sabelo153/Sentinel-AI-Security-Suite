@@ -111,7 +111,8 @@ conversation and resolution workflow.
 **Quotations and mobilisation** supports monthly service quotations with 1–30
 lines, quantities, integer minor-unit prices, tax basis points, terms and a
 validity date. Supported two-decimal currencies are ZAR, USD, EUR, GBP, NAD and
-BWP. For example, 10000 minor units is ZAR 100.00; 1500 basis points is 15% tax.
+BWP. The API stores 10000 minor units for ZAR 100.00 and 1500 basis points for
+15% tax. The reviewed browser editor accepts 100.00 and 15 respectively.
 Totals are computed on the server with integer arithmetic and rounding.
 
 Managers can edit current drafts, then share an immutable offer to mapped client

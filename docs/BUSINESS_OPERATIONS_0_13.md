@@ -36,7 +36,8 @@ drivers see their own trips. Start requires five explicit yes/no checks: brakes,
 tyres, lights, seatbelts and fluids. Any failed check grounds the vehicle. Record
 workshop evidence and a future service threshold to return it to service. Mileage
 cannot decrease. Finish records the final odometer; cancellation does not change
-it. Fuel uses thousandths of a litre and cost in currency minor units. Service-due
+it. The browser accepts litres and normal currency amounts; the API stores
+thousandths of a litre and currency minor units. Service-due
 vehicles cannot be newly allocated or started. These records do not provide live
 vehicle telemetry, licence validation or an accounting integration.
 

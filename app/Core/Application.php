@@ -1055,7 +1055,7 @@ final class Application
     public function handle(Request $request): Response
     {
         $context = $this->runtimeContext();
-        $request->assertJsonBodyIsAcceptable((int) $this->config()->get('security.max_json_body_bytes', 1048576));
+        $request->assertJsonBodyIsAcceptable((int) $this->config()->get('security.max_json_body_bytes', 4194304));
         // A long-lived worker must not carry authentication state into a new request.
         $context->reset();
         $context->setRequest($request);

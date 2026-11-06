@@ -91,8 +91,8 @@ this is not a guarantee that an unrecorded patrol did not physically occur.
 Clients mapped to the current site client, or authorised staff, request future
 coverage lasting up to seven days and specify guard count. Staff issue a one-off
 quotation using the existing quotation engine: unit price is per guard for the
-whole requested period, not a monthly or hourly rate. Currency minor units and
-explicit tax basis points remain visible. Mapped clients accept/decline the exact
+whole requested period, not a monthly or hourly rate. The browser accepts normal currency amounts and tax percentages; the API retains
+integer minor units and tax basis points. Mapped clients accept/decline the exact
 shared offer in either quotation or service-request views; decisions synchronize
 the request. Changed client/site mappings stop old-client access. One-off quotes
 cannot be converted into monthly contracts through the existing conversion route.
