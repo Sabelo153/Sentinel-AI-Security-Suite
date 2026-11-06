@@ -13,6 +13,8 @@ final class OperationalAcceptanceTest extends TestCase
     {
         $db=new Database(new Config([]),static fn():PDO=>new PDO('sqlite::memory:',null,null,[PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]));
         foreach([
+            'subcontractor_users(company_id INTEGER,user_id INTEGER,subcontractor_id INTEGER)',
+            'subcontractor_companies(company_id INTEGER,subcontractor_id INTEGER)',
             'users (user_id INTEGER,company_id INTEGER,status TEXT)','roles (role_id INTEGER,company_id INTEGER,status TEXT)','permissions (permission_id INTEGER,company_id INTEGER,permission_code TEXT,status TEXT)','user_roles (user_id INTEGER,role_id INTEGER,company_id INTEGER)','role_permissions (role_id INTEGER,permission_id INTEGER,company_id INTEGER)',
             'sites (site_id INTEGER,company_id INTEGER)','employees (employee_id INTEGER,company_id INTEGER)','shift_assignments (shift_assignment_id INTEGER,company_id INTEGER,site_id INTEGER,employee_id INTEGER,deleted_at TEXT)',
             'occurrence_entries (occurrence_entry_id INTEGER PRIMARY KEY AUTOINCREMENT,occurrence_entry_uuid TEXT,company_id INTEGER,site_id INTEGER,employee_id INTEGER,shift_assignment_id INTEGER,entry_reference TEXT,entry_type TEXT,occurred_at TEXT,entry_text TEXT,handover_required INTEGER,handover_reference TEXT,created_by_user_id INTEGER,created_at TEXT DEFAULT CURRENT_TIMESTAMP)',

@@ -29,6 +29,9 @@ final class SubscriptionPolicy
         // Recovery access is still explicitly controlled by RBAC on every plan.
         if (in_array($permission, ['support.view', 'support.manage', 'support.delegated_view', 'client_portal.read'], true)) return self::isKnownPlan($plan);
         $module = explode('.', $permission, 2)[0];
+        if(in_array($permission,['alarm_response.self','guard_transport.self','post_orders.self','continuity.self','extra_services.client','client_mobilisation.client','risk_assessments.client'],true)||in_array($module,['post_orders','continuity'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['alarm_response','operations_analytics','subcontractors'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['guard_transport','equipment_checks','control_handover','extra_services','client_mobilisation','risk_assessments'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
         if(in_array($permission,['learning.self','stock.self'],true)||$module==='lost_found')return self::isKnownPlan($plan);
         if(in_array($module,['learning','stock'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
         if($module==='investigations')return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);

@@ -236,5 +236,12 @@
     "symptom": "Quiz blocked, missing property receipt, stale investigation review or insufficient uniform stock",
     "remedy": "Apply schema 076 and explicit tenant permissions. Check lesson acknowledgement and attempt limits, property identity/signature, assigned investigator and separate reviewer, stock counts and signed acceptance. The business worker reports expiry, low stock and overdue follow-up.",
     "manual": "Internal course completion does not verify statutory qualifications. Check property entitlement in person. Evidence holds remain until reviewed by an authorised retention administrator. Physical returns must be counted before restocking; quarantine and write-offs never increase availability."
+  },
+  {
+    "id": "service_delivery",
+    "title": "Service delivery, continuity, client readiness and partners",
+    "symptom": "Alarm pending, missed pickup, overdue inspection, stale client approval or denied subcontractor access",
+    "remedy": "Apply schema 077 before deploying access-policy code. Seed explicit permissions, approve subcontractor documents/sites, assign individual users and site grants, then schedule the existing business/control-room workers. Read current plan editions and review evidence before acceptance.",
+    "manual": "No automatic alarm receiver, emergency call, live vehicle tracking or infrastructure failover is implied. Analytics estimates overtime from current approved UTC clock records using a chosen threshold. Site/client/contract changes invalidate mobilisation approvals; company document revisions invalidate subcontractor site approvals."
   }
 ]

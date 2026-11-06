@@ -29,6 +29,62 @@ SELECT 'stock.adjust' AS permission_code, 'stock' AS module_name, 'adjust' AS ac
 UNION ALL
 SELECT 'stock.self' AS permission_code, 'stock' AS module_name, 'self' AS action_name
 UNION ALL
+SELECT 'alarm_response.view' AS permission_code, 'alarm_response' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'alarm_response.manage' AS permission_code, 'alarm_response' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'guard_transport.view' AS permission_code, 'guard_transport' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'guard_transport.manage' AS permission_code, 'guard_transport' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'post_orders.view' AS permission_code, 'post_orders' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'post_orders.manage' AS permission_code, 'post_orders' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'continuity.view' AS permission_code, 'continuity' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'continuity.manage' AS permission_code, 'continuity' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment_checks.view' AS permission_code, 'equipment_checks' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment_checks.manage' AS permission_code, 'equipment_checks' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_handover.view' AS permission_code, 'control_handover' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'control_handover.manage' AS permission_code, 'control_handover' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'extra_services.view' AS permission_code, 'extra_services' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'extra_services.manage' AS permission_code, 'extra_services' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.view' AS permission_code, 'client_mobilisation' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.manage' AS permission_code, 'client_mobilisation' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'risk_assessments.view' AS permission_code, 'risk_assessments' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'risk_assessments.manage' AS permission_code, 'risk_assessments' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'subcontractors.view' AS permission_code, 'subcontractors' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'subcontractors.manage' AS permission_code, 'subcontractors' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'alarm_response.self' AS permission_code, 'alarm_response' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'guard_transport.self' AS permission_code, 'guard_transport' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'post_orders.self' AS permission_code, 'post_orders' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'continuity.self' AS permission_code, 'continuity' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'extra_services.client' AS permission_code, 'extra_services' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.client' AS permission_code, 'client_mobilisation' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'risk_assessments.client' AS permission_code, 'risk_assessments' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'operations_analytics.view' AS permission_code, 'operations_analytics' AS module_name, 'view' AS action_name
+UNION ALL
 SELECT 'access_events.create' AS permission_code, 'access_events' AS module_name, 'create' AS action_name
 UNION ALL
 SELECT 'access_events.view' AS permission_code, 'access_events' AS module_name, 'view' AS action_name
@@ -511,6 +567,62 @@ UNION ALL
 SELECT 'stock.adjust' AS permission_code, 'stock' AS module_name, 'adjust' AS action_name
 UNION ALL
 SELECT 'stock.self' AS permission_code, 'stock' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'alarm_response.view' AS permission_code, 'alarm_response' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'alarm_response.manage' AS permission_code, 'alarm_response' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'guard_transport.view' AS permission_code, 'guard_transport' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'guard_transport.manage' AS permission_code, 'guard_transport' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'post_orders.view' AS permission_code, 'post_orders' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'post_orders.manage' AS permission_code, 'post_orders' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'continuity.view' AS permission_code, 'continuity' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'continuity.manage' AS permission_code, 'continuity' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment_checks.view' AS permission_code, 'equipment_checks' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment_checks.manage' AS permission_code, 'equipment_checks' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_handover.view' AS permission_code, 'control_handover' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'control_handover.manage' AS permission_code, 'control_handover' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'extra_services.view' AS permission_code, 'extra_services' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'extra_services.manage' AS permission_code, 'extra_services' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.view' AS permission_code, 'client_mobilisation' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.manage' AS permission_code, 'client_mobilisation' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'risk_assessments.view' AS permission_code, 'risk_assessments' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'risk_assessments.manage' AS permission_code, 'risk_assessments' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'subcontractors.view' AS permission_code, 'subcontractors' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'subcontractors.manage' AS permission_code, 'subcontractors' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'alarm_response.self' AS permission_code, 'alarm_response' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'guard_transport.self' AS permission_code, 'guard_transport' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'post_orders.self' AS permission_code, 'post_orders' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'continuity.self' AS permission_code, 'continuity' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'extra_services.client' AS permission_code, 'extra_services' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.client' AS permission_code, 'client_mobilisation' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'risk_assessments.client' AS permission_code, 'risk_assessments' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'operations_analytics.view' AS permission_code, 'operations_analytics' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'access_events.create' AS permission_code, 'access_events' AS module_name, 'create' AS action_name
 UNION ALL

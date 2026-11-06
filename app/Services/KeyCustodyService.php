@@ -19,7 +19,7 @@ final class KeyCustodyService
     }
     public function mine(): array {
         $rows=$this->db->fetchAll("SELECT l.loan_id,l.asset_id,l.employee_id,l.state,l.revision,l.due_at,a.asset_code,a.asset_name,a.asset_type,a.site_id FROM custody_loans l JOIN custody_assets a ON a.company_id=l.company_id AND a.asset_id=l.asset_id WHERE l.company_id=:company AND l.employee_id=:employee AND l.state IN ('PENDING_ACCEPTANCE','ISSUED','RETURN_PENDING','LOST') ORDER BY l.loan_id DESC LIMIT 200",['company'=>$this->company(),'employee'=>$this->employee()]);
-        foreach($rows as&$r)$r['overdue']=$r['state']!=='LOST'&&$r['due_at']<gmdate('Y-m-d H:i:s');unset($r);return $rows;
+        foreach($rows as&$r)$r['overdue']=$r['state']!=='LOST'&&$r['due_at']<gmdate('Y-m-d H:i:s');unset($r);return array_values(array_filter($rows,fn($r)=>$this->access->allowed($r['site_id'])));
     }
     private function event(string $asset,?string $loan,string $type,string $notes): void {
         $this->db->execute('INSERT INTO custody_events(company_id,asset_id,loan_id,event_type,notes,actor_user_id,occurred_at) VALUES(:company,:asset,:loan,:type,:notes,:actor,:now)',['company'=>$this->company(),'asset'=>$asset,'loan'=>$loan,'type'=>$type,'notes'=>$notes,'actor'=>$this->actor(),'now'=>gmdate('Y-m-d H:i:s')]);
@@ -45,7 +45,7 @@ final class KeyCustodyService
         if(!$size||$size[2]!==IMAGETYPE_PNG||strlen($bytes)>65536||$size[0]>1024||$size[1]>512)throw HttpException::unprocessable('Use a PNG signature up to 64 KiB, 1024 by 512 pixels.');return [base64_encode($bytes),hash('sha256',$bytes)];
     }
     public function selfAction(string $id,string $action,array $input): array {return $this->atomic(function()use($id,$action,$input){
-        $this->fields($input,['expected_revision','signature_base64','notes']);$loan=$this->row('custody_loans','loan_id',$id);if((string)$loan['employee_id']!==$this->employee())throw HttpException::notFound();$asset=$this->row('custody_assets','asset_id',$loan['asset_id']);
+        $this->fields($input,['expected_revision','signature_base64','notes']);$loan=$this->row('custody_loans','loan_id',$id);if((string)$loan['employee_id']!==$this->employee())throw HttpException::notFound();$asset=$this->row('custody_assets','asset_id',$loan['asset_id']);$this->access->requireSite($asset['site_id']);
         if($this->number($input['expected_revision']??null)!==(int)$loan['revision'])throw HttpException::conflict('Custody changed. Refresh first.');
         [$signature,$hash]=$this->signature($input['signature_base64']??null);$notes=$this->text($input['notes']??null,2000);$now=gmdate('Y-m-d H:i:s');
         if($action==='accept'&&$loan['state']==='PENDING_ACCEPTANCE'&&$asset['state']==='RESERVED'){

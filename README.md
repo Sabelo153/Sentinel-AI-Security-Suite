@@ -5,7 +5,9 @@ A security operations development project by **Sabelo Andile Biyela**, based in 
 **[Live project website](https://sabelo153.github.io/Sentinel-AI-Security-Suite/)** — interactive sample tour hosted on GitHub Pages. Login and operational records require separate server hosting.
 
 ## Project status
-The latest addition is [Sentinel 0.14 workforce assurance](docs/WORKFORCE_ASSURANCE_0_14.md): assigned lessons and quizzes with expiring internal certificates, photographed lost-and-found custody and signed collection, staged incident investigations with independent closure review, and stock/uniform ledgers with signed acceptance and controlled returns.
+The latest addition is [Sentinel 0.15 service delivery](docs/SERVICE_DELIVERY_0_15.md): alarm response, guard transport, effective post orders, continuity plans, equipment inspections, control-room handovers, extra-service quotations/fulfilment, client mobilisation approval, subcontractor site/document controls, risk assessments and site analytics.
+
+The preceding addition is [Sentinel 0.14 workforce assurance](docs/WORKFORCE_ASSURANCE_0_14.md): assigned lessons and quizzes with expiring internal certificates, photographed lost-and-found custody and signed collection, staged incident investigations with independent closure review, and stock/uniform ledgers with signed acceptance and controlled returns.
 
 The preceding addition is [Sentinel 0.13 business operations](docs/BUSINESS_OPERATIONS_0_13.md): manager-confirmed open shifts, client-approved visitor QR passes, fleet records, effective-dated renewals, encrypted tenant backups with restore verification, pilot setup and your own sponsor banners on Free only. Paid plans stay ad-free. Android 0.10 adds home-screen sponsor support without Play Store dependencies.
 

@@ -13,6 +13,8 @@ final class SupportWorkspaceTest extends TestCase
     {
         $db=new Database(new Config([]),static fn():PDO=>new PDO('sqlite::memory:',null,null,[PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]));
         foreach([
+            'subcontractor_users(company_id INTEGER,user_id INTEGER,subcontractor_id INTEGER)',
+            'subcontractor_companies(company_id INTEGER,subcontractor_id INTEGER)',
             'users (user_id INTEGER,company_id INTEGER,status TEXT)',
             'roles (role_id INTEGER,company_id INTEGER,status TEXT)',
             'permissions (permission_id INTEGER,company_id INTEGER,permission_code TEXT,status TEXT)',

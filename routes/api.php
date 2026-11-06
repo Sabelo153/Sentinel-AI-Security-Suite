@@ -14,6 +14,7 @@ return static function (Router $router, Container $container): void {
     (require __DIR__.'/client-workflows.php')($router,$container);
     (require __DIR__.'/operational-readiness.php')($router,$container);
     (require __DIR__.'/operations-hub.php')($router,$container);
+    (require __DIR__.'/service-delivery.php')($router,$container);
     (require __DIR__.'/workforce-assurance.php')($router,$container);
     (require __DIR__.'/business-operations.php')($router,$container);
     (require __DIR__.'/photo-reports.php')($router,$container);
