@@ -97,6 +97,7 @@
           const path='/'+view+'/'+row[schema.key];
           if(schema.edit&&!(view==='inspections'&&!['DRAFT','IN_PROGRESS'].includes(row.status)))actions.append(button('Edit',()=>form('Edit '+schema.title.toLowerCase(),schema.fields,path,'PATCH',row,reload)));
           if(view==='occurrence-entries'){
+            actions.append(button('Photos',async()=>{const {card}=dialog('Report photos');try{const {payload}=await request('/report-photos/occurrence/'+row.occurrence_entry_id);for(const photo of payload.data){const image=node('img');image.src='data:image/jpeg;base64,'+photo.image_base64;image.alt='Guard report photo';image.style.maxWidth='100%';card.append(image);}if(!payload.data.length)card.append(node('p','No attached photos.'));}catch(e){card.append(node('p',e.message));}}));
             actions.append(button('History',()=>history(row)),button('Revise',async()=>{try{const {payload}=await request(path+'/revisions');await form('Revise entry',{entry_text:'long',revision_reason:'long'},path+'/revisions','POST',{entry_text:row.entry_text,expected_revision:(payload.data||[]).length},reload);}catch(error){notice(error.message);}}));
           }
           if(view==='visitor-visits'){
@@ -108,6 +109,7 @@
             if(next)actions.append(button('Change alert status',()=>form('Alert status',{status:next},path+'/status','POST',{},reload)));
           }
           if(view==='notifications'&&!row.read_at)actions.append(button('Mark read',async()=>{try{await request(path+'/read',{method:'POST',body:'{}'});reload();}catch(error){notice(error.message);}}));
+          if(view==='incidents')actions.append(button('Photos',async()=>{const {card}=dialog('Incident photos');try{const {payload}=await request('/report-photos/incident/'+row.incident_id);for(const photo of payload.data){const image=node('img');image.src='data:image/jpeg;base64,'+photo.image_base64;image.alt='Incident photo';image.style.maxWidth='100%';card.append(image);}if(!payload.data.length)card.append(node('p','No attached photos.'));}catch(e){card.append(node('p',e.message));}}));
           if(view==='inspections'){
             actions.append(button('Checklist',()=>checklist(row,reload)));
             const next={DRAFT:['IN_PROGRESS','CANCELLED'],IN_PROGRESS:['COMPLETED','CANCELLED']}[row.status];

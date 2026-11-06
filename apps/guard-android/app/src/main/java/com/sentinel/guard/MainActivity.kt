@@ -31,11 +31,6 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.*
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.common.InputImage
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
@@ -44,7 +39,8 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
-    private companion object { const val QR_CAMERA_REQUEST = 7102 }
+    private companion object { const val QR_CAMERA_REQUEST = 7102; const val REPORT_CAMERA_REQUEST = 7103 }
+    private var reportPhoto: String? = null
     private lateinit var client: GuardClient
     private lateinit var layout: LinearLayout
     private lateinit var notice: TextView
@@ -52,9 +48,16 @@ class MainActivity : Activity() {
     private var passwordVisibility: CheckBox? = null
     private var workspace: JSONObject? = null
     private var nfcSession: String? = null
+    private val reconnectCallback=object:android.net.ConnectivityManager.NetworkCallback(){override fun onAvailable(network:android.net.Network){SyncJob.requestSync(applicationContext)}}
     private var locationCancellation: CancellationSignal? = null
     private var legacyLocationListener: LocationListener? = null
     private var qrCallback: ((String) -> Unit)? = null
+    private val sponsorWorker=Executors.newSingleThreadExecutor()
+    private val sponsorHandler=Handler(Looper.getMainLooper())
+    private var sponsorTask:Runnable?=null
+    private var sponsorBox:LinearLayout?=null
+    private var sponsorGeneration=0
+    private var sponsorRequest=0
     private val worker = Executors.newSingleThreadExecutor()
     private val navy = Color.rgb(6,35,66)
     private val cyan = Color.rgb(18,204,229)
@@ -72,8 +75,11 @@ class MainActivity : Activity() {
         catch (_: Exception) { loginScreen(); notice.text = getString(R.string.secure_storage_unavailable) }
         val job = JobInfo.Builder(7101,ComponentName(this,SyncJob::class.java)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(15*60*1000L).setPersisted(true).build()
         getSystemService(JobScheduler::class.java).schedule(job)
+        getSystemService(android.net.ConnectivityManager::class.java).registerDefaultNetworkCallback(reconnectCallback)
+        if(client.pending()>0)SyncJob.requestSync(applicationContext)
     }
     private fun screen(title: String) {
+        sponsorGeneration++;sponsorTask?.let{sponsorHandler.removeCallbacks(it)};sponsorTask=null;sponsorBox=null
         passwordVisibility?.isChecked=false
         passwordVisibility=null
         val scroll=ScrollView(this).apply { alpha=0f;translationY=16f*resources.displayMetrics.density;setBackgroundColor(Color.rgb(246,249,251));isFillViewport=true };layout=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(22),dp(34),dp(22),dp(36));gravity=Gravity.CENTER_HORIZONTAL };scroll.addView(layout);setContentView(scroll)
@@ -82,6 +88,7 @@ class MainActivity : Activity() {
         notice=TextView(this).apply { accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_POLITE;setTextColor(muted);textSize=14f;setLineSpacing(0f,1.18f);setPadding(0,0,0,dp(12));layoutParams=LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT) };layout.addView(notice)
         progress=ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply { isIndeterminate=true;indeterminateTintList=ColorStateList.valueOf(cyan);visibility=View.GONE;contentDescription=getString(R.string.working) };layout.addView(progress,LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(4)).apply{bottomMargin=dp(14)})
         scroll.animate().alpha(1f).translationY(0f).setDuration(280).setInterpolator(DecelerateInterpolator()).start()
+        if(ManagedDeviceController(this).isOwner()) button("Device management / supervisor recovery",::managedDeviceScreen)
     }
     private fun text(value: String) { layout.addView(TextView(this).apply { text=value;textSize=16f;setTextColor(ink);setLineSpacing(0f,1.16f);setPadding(dp(2),dp(18),dp(2),dp(8));layoutParams=LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT) }) }
     private fun button(value: String, action: ()->Unit) { layout.addView(Button(this).apply { text=value;isAllCaps=false;textSize=14f;setTextColor(navy);stateListAnimator=null;background=ripple(surface(Color.WHITE,12,Color.rgb(207,220,229)));setPadding(dp(14),0,dp(14),0);minHeight=dp(50);setOnClickListener { animate().scaleX(.98f).scaleY(.98f).setDuration(70).withEndAction{animate().scaleX(1f).scaleY(1f).setDuration(120).start();action()}.start() };layoutParams=LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(52)).apply{topMargin=dp(6)} }) }
@@ -106,20 +113,22 @@ class MainActivity : Activity() {
             passwordVisibility=reveal
             layout.addView(reveal,LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT))
             val loginLayout=layout
+            val authenticator=field("Authenticator / recovery code (if enabled)");authenticator.isSaveEnabled=false
             val loginNotice=notice
             val loginProgress=progress
             var signingIn=false
             primaryButton(getString(R.string.sign_in)) {
                 if(signingIn)return@primaryButton
                 val name=identifier.text.toString().trim();val secret=password.text.toString()
+                val authCode=authenticator.text.toString().trim()
                 if(name.isBlank()||secret.isBlank()){notice.text=getString(R.string.enter_login_details);return@primaryButton}
                 signingIn=true
                 identifier.isEnabled=false;password.isEnabled=false;reveal.isChecked=false;reveal.isEnabled=false
                 loginNotice.text=getString(R.string.signing_in);loginProgress.visibility=View.VISIBLE
                 worker.execute {
                     try {
-                        val result=client.login(name,secret)
-                        runOnUiThread { password.text.clear();if(!isDestroyed&&layout===loginLayout){workspace=result;home();synchronize()} }
+                        val result=client.login(name,secret,authCode)
+                        runOnUiThread { password.text.clear();authenticator.text.clear();if(!isDestroyed&&layout===loginLayout){workspace=result;home();synchronize()} }
                     } catch(error:Exception) {
                         runOnUiThread { if(!isDestroyed&&layout===loginLayout){loginNotice.text=error.message?:getString(R.string.operation_failed);password.requestFocus()} }
                     } finally {
@@ -198,9 +207,10 @@ class MainActivity : Activity() {
         worker.execute { try { action() } catch(error:Exception) { runOnUiThread { if(error is ApiFailure && error.status==401){client.signOut();loginScreen()};notice.text=error.message?:getString(R.string.operation_failed) } } finally { runOnUiThread { if(::progress.isInitialized)progress.visibility=View.GONE } } }
     }
     private fun synchronize() = background {
+        try { client.refreshManagedPolicy() } catch(_:Exception) { /* Retain last known policy offline. */ }
         val result=client.sync()
         if(client.session()!=null)try { workspace=client.refresh() } catch(_:ApiFailure) { /* Cached workspace stays available offline. */ }
-        runOnUiThread { if(client.session()==null)loginScreen() else home();notice.text=result }
+        runOnUiThread { if(client.session()==null)loginScreen() else home();notice.text=result;applyManagedPolicy() }
     }
     private fun enqueue(action:String,data:JSONObject) {
         background {
@@ -211,7 +221,7 @@ class MainActivity : Activity() {
         }
     }
     private fun rows(name:String):List<JSONObject> {
-        val array=workspace?.optJSONArray(name)?:JSONArray();return(0 until array.length()).map{array.getJSONObject(it)}
+        val stored=workspace?.optJSONArray(name)?:JSONArray();val array=if(name=="patrols")client.patrolsForDisplay(stored) else stored;return(0 until array.length()).map{array.getJSONObject(it)}
     }
     private fun home() {
         screen(getString(R.string.guard_workspace))
@@ -221,7 +231,17 @@ class MainActivity : Activity() {
         button(getString(R.string.capture_gps),::captureLocation)
         button("My patrol schedule") { scheduleScreen() }
         button("Patrol history",::historyScreen)
+        button("Report incident") { chooseReportShift("incident") }
+        button("Occurrence book / handover") { chooseReportShift("occurrence") }
+        button("My response and check-ins",::controlRoomScreen)
+        button("Site instructions, training and handovers",::siteAssuranceScreen)
+        button("Read NFC tag UID for checkpoint setup") { armNfc("SETUP") }
+        button("Visitor / vehicle gate capture",::gateShiftScreen)
+        button("Offline queue and diagnostics",::queueScreen)
+        button("Enrol company-managed phone",::managedDeviceScreen)
         button("Open manager dashboard") { client.adminUrl()?.let{startActivity(Intent(Intent.ACTION_VIEW,android.net.Uri.parse(it)))} }
+        button("Company APK installation / updates") { client.distributionUrl()?.let{try{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(it)))}catch(_:Exception){notice.text="Ask your supervisor to use the company APK or USB update process. Kiosk restrictions may block the browser."}} }
+        button("Open-source notices") { AlertDialog.Builder(this).setTitle("ZXing Core · Apache 2.0").setMessage(assets.open("licenses/zxing.txt").bufferedReader().use{it.readText()}).setPositiveButton("Close",null).show() }
         text(getString(R.string.shifts))
         val openShifts=rows("shifts").filter{it.optString("assignment_status") in listOf("ASSIGNED","CONFIRMED","IN_PROGRESS")}
         if(openShifts.isEmpty())text("No assigned shifts yet. Your manager must assign a shift at your site, then you can synchronize here. You can sign in successfully before work has been assigned.")
@@ -251,8 +271,25 @@ class MainActivity : Activity() {
                 AlertDialog.Builder(this).setTitle(R.string.choose_assignment).setItems(labels){_,index->enqueue("start_patrol",JSONObject().put("employee_assignment_id",assignments[index].get("employee_assignment_id")).put("patrol_route_id",route.get("patrol_route_id")).put("shift_assignment_id",shift.get("shift_assignment_id")).put("started_at",now()))}.show()
             }
         }
+        val sponsor=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE;setPadding(dp(12),dp(12),dp(12),dp(12));background=surface(Color.WHITE,12,Color.LTGRAY)}
+        sponsorBox=sponsor;layout.addView(sponsor);refreshSponsor()
         text(getString(R.string.offline_events_notice))
-        button(getString(R.string.sign_out)) { client.signOut();nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);loginScreen() }
+        button(getString(R.string.sign_out)) { background{val result=client.logout();runOnUiThread{nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);loginScreen();notice.text=result}} }
+    }
+    private fun refreshSponsor(){
+        val box=sponsorBox?:return;val session=client.session()?:return;val generation=sponsorGeneration;val requestId=++sponsorRequest
+        sponsorTask?.let{sponsorHandler.removeCallbacks(it)};box.visibility=View.GONE;box.removeAllViews()
+        if(sponsorWorker.isShutdown)return
+        sponsorWorker.execute{val placement=try{client.sponsorPlacement()}catch(_:Exception){null};runOnUiThread{
+            if(isFinishing||isDestroyed||generation!=sponsorGeneration||requestId!=sponsorRequest||client.session()?.token!=session.token||sponsorBox!==box)return@runOnUiThread
+            if(placement!=null&&SponsorPolicy.canShow(placement.optBoolean("enabled"),placement.optString("plan_code"))){val c=placement.optJSONObject("campaign");val url=c?.optString("url")?.let{SponsorPolicy.destination(session.base,it)};if(c!=null&&url!=null){
+                box.addView(TextView(this).apply{text="Sponsored · "+c.optString("title");setTextColor(ink);setTypeface(Typeface.DEFAULT,Typeface.BOLD)})
+                box.addView(TextView(this).apply{text=c.optString("body");setTextColor(muted)})
+                box.addView(Button(this).apply{text=c.optString("cta","View sponsor");isAllCaps=false;setOnClickListener{if(!sponsorWorker.isShutdown)sponsorWorker.execute{val fresh=try{client.sponsorPlacement()}catch(_:Exception){null};runOnUiThread{if(generation==sponsorGeneration&&client.session()?.token==session.token&&fresh!=null&&SponsorPolicy.canShow(fresh.optBoolean("enabled"),fresh.optString("plan_code")))try{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(url)))}catch(_:Exception){box.visibility=View.GONE}else box.visibility=View.GONE}}}})
+                box.visibility=View.VISIBLE
+            }}
+            sponsorTask=Runnable{refreshSponsor()}.also{sponsorHandler.postDelayed(it,15000)}
+        }}
     }
     private fun historyScreen() {
         screen("My patrol history")
@@ -265,6 +302,12 @@ class MainActivity : Activity() {
         }
     }
     private fun patrolDetailsScreen(id:String) {
+        if(id.startsWith("local:")){
+            screen("Offline patrol records")
+            text("Saved on this phone. Scans and completion are pending until the server acknowledges them. Keep the app installed; automatic upload needs connectivity and a valid sign-in.")
+            for(event in client.offlinePatrolEvents(id))text("${event.optString("action")} · ${event.optString("method")} · ${event.optString("recorded_at",event.optString("occurred_at"))} UTC")
+            button("Back to workspace",::home);return
+        }
         background {
             val result=client.patrolDetails(id)
             runOnUiThread {
@@ -344,7 +387,12 @@ class MainActivity : Activity() {
         nfcSession=id;notice.text=getString(R.string.nfc_hold)
         adapter.enableReaderMode(this,{tag->
             val session=nfcSession;nfcSession=null
-            if(session!=null)runOnUiThread { adapter.disableReaderMode(this);checkpoint(session,"NFC",tag.id.joinToString(""){"%02x".format(it)}) }
+            if(session!=null)runOnUiThread {
+                adapter.disableReaderMode(this)
+                val uid=tag.id.joinToString(""){"%02x".format(it)}
+                if(session=="SETUP")AlertDialog.Builder(this).setTitle("NFC checkpoint UID").setMessage("$uid\n\nGive this UID to your authorised checkpoint administrator. Reading it does not register a checkpoint or record a patrol visit.").setPositiveButton("Copy UID"){_,_->getSystemService(android.content.ClipboardManager::class.java).setPrimaryClip(android.content.ClipData.newPlainText("NFC tag UID",uid))}.setNegativeButton("Close",null).show()
+                else checkpoint(session,"NFC",uid)
+            }
         },NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_NFC_B or NfcAdapter.FLAG_READER_NFC_F or NfcAdapter.FLAG_READER_NFC_V or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,null)
     }
     private fun recordLocation(location: Location?) {
@@ -356,13 +404,7 @@ class MainActivity : Activity() {
 
     private fun scanQr(onScanned:(String)->Unit) {
         qrCallback=onScanned
-        try {
-            GmsBarcodeScanning.getClient(this).startScan()
-                .addOnSuccessListener { barcode -> finishQrScan(barcode.rawValue) }
-                .addOnFailureListener { openCameraQrCapture() }
-        } catch (_: Exception) {
-            openCameraQrCapture()
-        }
+        openCameraQrCapture()
     }
 
     private fun openCameraQrCapture() {
@@ -385,21 +427,29 @@ class MainActivity : Activity() {
         data?.getParcelableExtra("data",Bitmap::class.java)
     else data?.extras?.get("data") as? Bitmap
 
-    @Deprecated("Camera capture fallback for devices without Google Play services")
+    @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode:Int,resultCode:Int,data:Intent?) {
         super.onActivityResult(requestCode,resultCode,data)
+        if(requestCode==REPORT_CAMERA_REQUEST){
+            if(resultCode==RESULT_OK){
+                val bitmap=cameraResultBitmap(data)
+                if(bitmap!=null){val bytes=java.io.ByteArrayOutputStream();bitmap.compress(Bitmap.CompressFormat.JPEG,75,bytes);if(bytes.size()<=200000){reportPhoto=android.util.Base64.encodeToString(bytes.toByteArray(),android.util.Base64.NO_WRAP);notice.text="Photo attached. It will be queued with your report."}else notice.text="Photo too large; report has not been submitted."}
+            }
+            return
+        }
         if(requestCode!=QR_CAMERA_REQUEST)return
         if(resultCode!=RESULT_OK) { qrCallback=null;notice.text=getString(R.string.qr_scan_cancelled);return }
         val bitmap=cameraResultBitmap(data)
         if(bitmap==null) { qrCallback=null;notice.text=getString(R.string.qr_not_found);return }
         notice.text=getString(R.string.qr_reading_photo)
-        val options=BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
-        val scanner=BarcodeScanning.getClient(options)
-        scanner.process(InputImage.fromBitmap(bitmap,0))
-            .addOnSuccessListener { codes -> finishQrScan(codes.firstOrNull()?.rawValue) }
-            .addOnFailureListener { qrCallback=null;notice.text=getString(R.string.qr_not_found) }
-            .addOnCompleteListener { scanner.close() }
+        if(bitmap.width.toLong()*bitmap.height>4_000_000){qrCallback=null;notice.text=getString(R.string.qr_not_found);return}
+        val account=client.session()?.account
+        worker.execute {
+            val value=try{val pixels=IntArray(bitmap.width*bitmap.height);bitmap.getPixels(pixels,0,bitmap.width,0,0,bitmap.width,bitmap.height);QrDecoder.decode(pixels,bitmap.width,bitmap.height)}catch(_:Exception){null}
+            runOnUiThread { if(!isDestroyed && client.session()?.account==account)finishQrScan(value) }
+        }
     }
+
     private fun captureLocation() {
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION),41);return}
         val manager=getSystemService(LocationManager::class.java)
@@ -418,6 +468,139 @@ class MainActivity : Activity() {
         Handler(Looper.getMainLooper()).postDelayed({if(locationCancellation===signal){signal.cancel();locationCancellation=null};legacyLocationListener?.let{manager.removeUpdates(it);legacyLocationListener=null}},30000)
     }
     override fun onRequestPermissionsResult(requestCode:Int,permissions:Array<out String>,grantResults:IntArray){super.onRequestPermissionsResult(requestCode,permissions,grantResults);if(requestCode==41&&grantResults.firstOrNull()==PackageManager.PERMISSION_GRANTED)captureLocation()else notice.text=getString(R.string.location_permission_denied)}
-    override fun onPause(){super.onPause();passwordVisibility?.isChecked=false;nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);locationCancellation?.cancel()}
-    override fun onDestroy(){super.onDestroy();worker.shutdown()}
+    override fun onPause(){super.onPause();sponsorGeneration++;sponsorTask?.let{sponsorHandler.removeCallbacks(it)};sponsorBox?.visibility=View.GONE;passwordVisibility?.isChecked=false;nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);locationCancellation?.cancel()}
+    override fun onDestroy(){try{getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(reconnectCallback)}catch(_:IllegalArgumentException){};super.onDestroy();sponsorHandler.removeCallbacksAndMessages(null);sponsorWorker.shutdown();worker.shutdown()}
+
+    override fun onPostResume(){super.onPostResume();applyManagedPolicy();if(sponsorBox!=null)refreshSponsor()}
+    private fun applyManagedPolicy(){try{val controller=ManagedDeviceController(this);val oldState=controller.state();val oldRevision=controller.revision();controller.apply(this);if(oldState!=controller.state()||oldRevision!=controller.revision())reportManagedPolicyState()}catch(_:Exception){notice.text="Managed policy could not be fully applied. Contact your supervisor; recovery remains available."}}
+    private fun reportManagedPolicyState(){if(!worker.isShutdown)worker.execute{try{client.refreshManagedPolicy()}catch(_:Exception){/* Last-known acknowledgement will be retried on subsequent contact. */}}}
+    private fun managedDeviceScreen(){
+        screen("Company-managed device")
+        val controller=ManagedDeviceController(this)
+        text("Device owner: ${controller.isOwner()} · policy state: ${controller.state()} · revision: ${controller.revision()}. An ordinary install cannot enforce app or notification restrictions.")
+        if(client.session()!=null){val enrollment=field("One-time company enrollment code",true);button("Enrol this phone"){val value=enrollment.text.toString().trim();enrollment.text.clear();background{client.enrollManagedDevice(value);runOnUiThread{applyManagedPolicy();managedDeviceScreen()}}}}
+        button("Refresh management policy"){background{client.refreshManagedPolicy();runOnUiThread{applyManagedPolicy();managedDeviceScreen()}}}
+        for(name in controller.allowedApps())button("Open approved app: $name"){try{controller.launch(this,name)}catch(e:Exception){notice.text=e.message}}
+        val recovery=field("Supervisor offline recovery code",true)
+        button("Release restrictions with recovery code"){val value=recovery.text.toString();recovery.text.clear();try{controller.recover(this,value);notice.text="Restrictions released. Administrator must send a new revision to re-enable management.";reportManagedPolicyState()}catch(e:Exception){notice.text=e.message}}
+        button("Back"){if(client.session()==null)loginScreen()else home()}
+    }
+    private fun siteAssuranceScreen(){
+        background {val data=client.siteAssurance();runOnUiThread {
+            screen("Site instructions and handovers")
+            val cached=data.optBoolean("cached",false)
+            text(if(cached)"OFFLINE COPY from ${data.optString("cached_at")}. A newer revision may exist. Connect before acknowledging instructions or accepting handovers." else "Current server snapshot. Read the contacts and instructions, then acknowledge the revision. Handovers require physical checks and a live connection.")
+            val instructions=data.getJSONArray("instructions")
+            for(i in 0 until instructions.length()){
+                val v=instructions.getJSONObject(i);text("${v.optString("title")} · site ${v.optString("site_id")} · revision ${v.optString("revision")}");text(v.optString("instructions"));text("Emergency contacts:\n${v.optString("emergency_contacts")}")
+                if(v.optBoolean("acknowledged"))text("Acknowledgement recorded.") else if(!cached)button("Acknowledge site ${v.optString("site_id")} revision ${v.optString("revision")}"){background{client.acknowledgeInstructions(v.getString("instruction_id"));runOnUiThread{siteAssuranceScreen()}}}
+            }
+            val handovers=data.getJSONArray("handovers")
+            for(i in 0 until handovers.length()){
+                val h=handovers.getJSONObject(i);text("Handover #${h.optString("handover_id")} · receiving shift ${h.optString("target_shift_id")}\nKeys: ${h.optString("keys_summary")}\nEquipment: ${h.optString("equipment_summary")}\nOpen incident IDs: ${h.optString("open_incident_ids")}\nTasks: ${h.optString("outstanding_tasks")}")
+                if(h.optBoolean("can_accept")&&!cached){val notes=field("Receiving guard checks / discrepancies");button("Accept handover #${h.optString("handover_id")}"){val value=notes.text.toString().trim();if(value.isBlank()){notice.text="Record your physical checks or discrepancies.";return@button};background{client.acceptHandover(h.getString("handover_id"),value);runOnUiThread{siteAssuranceScreen()}}}}
+            }
+            text("My training validity")
+            val training=data.getJSONArray("training");for(i in 0 until training.length()){val t=training.getJSONObject(i);text("${t.optString("competency_name")} · valid until ${t.optString("valid_until")} · verified ${!t.isNull("verified_at")} · revoked ${!t.isNull("revoked_at")}")}
+            if(!cached)button("Send shift handover",::handoverShiftScreen)
+            button("Refresh",::siteAssuranceScreen);button("Back",::home)
+        }}
+    }
+    private fun handoverShiftScreen(){
+        val shifts=rows("shifts").filter{it.optString("assignment_status") !in listOf("CANCELLED","MISSED")}
+        if(shifts.isEmpty()){notice.text="Synchronize your assigned shifts first.";return}
+        AlertDialog.Builder(this).setTitle("Your outgoing shift").setItems(shifts.map{"${it.optString("shift_name")} ${it.optString("shift_assignment_id")}"}.toTypedArray()){_,i->
+            screen("Send shift handover");text("Ask control room for the receiving shift ID. Check keys and equipment physically. If the network result is uncertain, refresh handover history before submitting again.")
+            val target=field("Receiving shift ID")
+            val keys=field("Keys handed over / discrepancies")
+            val equipment=field("Equipment checks / discrepancies")
+            val incidents=field("Open incident IDs separated by commas (optional)")
+            val tasks=field("Outstanding tasks (or None)")
+            button("Send handover to server"){
+                val ids=incidents.text.toString().split(Regex("[\\s,]+")).filter{it.isNotBlank()};val fields=listOf(target,keys,equipment,tasks)
+                if(fields.any{it.text.isBlank()}||ids.any{it.toLongOrNull()==null}){notice.text="Complete the checklist and use numeric incident IDs.";return@button}
+                val body=JSONObject().put("source_shift_id",shifts[i].get("shift_assignment_id")).put("target_shift_id",target.text.toString().trim()).put("keys_summary",keys.text.toString().trim()).put("equipment_summary",equipment.text.toString().trim()).put("open_incident_ids",JSONArray(ids)).put("outstanding_tasks",tasks.text.toString().trim())
+                background{client.sendHandover(body);runOnUiThread{siteAssuranceScreen()}}
+            }
+            button("Cancel",::siteAssuranceScreen)
+        }.show()
+    }
+    private fun controlRoomScreen(){
+        background {
+            val data=client.controlRoom()
+            runOnUiThread {
+                screen("My response and check-ins")
+                text("Live connection required. If a submission fails, contact your control room by radio or phone. This screen does not run a background emergency alarm.")
+                val dispatch=data.getJSONArray("dispatch")
+                for(i in 0 until dispatch.length()){
+                    val job=dispatch.getJSONObject(i);val id=job.getString("dispatch_id")
+                    text("Response #$id · incident ${job.optString("incident_id")} · ${job.optString("state")} · due ${job.optString("response_due_at")} UTC")
+                    val action=when(job.optString("state")){"ASSIGNED"->"accept";"ACCEPTED"->"arrive";else->null}
+                    if(action!=null)button("Record $action #$id"){background{client.responseAction(id,action,job.getInt("revision"));runOnUiThread{controlRoomScreen()}}}
+                }
+                val plans=data.getJSONArray("checkins")
+                for(i in 0 until plans.length()){
+                    val plan=plans.getJSONObject(i);val id=plan.getString("plan_id")
+                    text("Check-in #$id · due ${plan.optString("next_due_at")} UTC · ends ${plan.optString("ends_at")} UTC")
+                    val code=field("Check-in code",true);code.setText("OK")
+                    button("Submit check-in #$id"){val value=code.text.toString();code.text.clear();background{client.checkin(id,value);runOnUiThread{controlRoomScreen();notice.text="Check-in received by server."}}}
+                }
+                if(dispatch.length()==0&&plans.length()==0)text("No active response assignments or check-in plans.")
+                button("Refresh",::controlRoomScreen);button("Back",::home)
+            }
+        }
+    }
+    private fun gateShiftScreen(){
+        val shifts=rows("shifts").filter{it.optString("assignment_status") in listOf("ASSIGNED","CONFIRMED","IN_PROGRESS")}
+        if(shifts.isEmpty()){notice.text="Synchronize an assigned shift before gate capture.";return}
+        AlertDialog.Builder(this).setTitle("Choose gate duty shift").setItems(shifts.map{"${it.optString("shift_name")} ${it.optString("assignment_date")}"}.toTypedArray()){_,i->gateScreen(shifts[i])}.show()
+    }
+    private fun gateScreen(shift:JSONObject){
+        screen("Visitor / vehicle gate capture")
+        text("Capture a movement or delivery for your assigned site. Offline records cannot verify blocked-person lists or authorisation. Follow company gate procedures. Records remain encrypted until server sync.")
+        val at=field("UTC event time (yyyy-MM-dd HH:mm:ss)");at.setText(now())
+        val name=field("Visitor or delivery contact name")
+        val vehicle=field("Vehicle registration (optional)")
+        val purpose=field("Purpose / delivery reference")
+        val direction=Spinner(this);direction.adapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,listOf("ENTRY","EXIT"));layout.addView(direction)
+        val authorization=Spinner(this);authorization.adapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,listOf("PENDING","AUTHORIZED","DENIED"));layout.addView(authorization)
+        val uuid=java.util.UUID.randomUUID().toString();var saved=false
+        button("Save encrypted gate capture and synchronize"){
+            if(saved)return@button
+            if(name.text.isBlank()||purpose.text.isBlank()||name.text.length>150||purpose.text.length>500||vehicle.text.length>30){notice.text="Enter a name and purpose within the field limits.";return@button}
+            saved=true
+            enqueue("gate_capture",JSONObject().put("capture_uuid",uuid).put("shift_assignment_id",shift.get("shift_assignment_id")).put("visitor_name",name.text.toString().trim()).put("vehicle_registration",vehicle.text.toString().trim()).put("purpose",purpose.text.toString().trim()).put("direction",direction.selectedItem.toString()).put("authorization",authorization.selectedItem.toString()).put("occurred_at",at.text.toString().trim()))
+        }
+        button("Cancel",::home)
+    }
+    private fun chooseReportShift(action:String){
+        val shifts=rows("shifts").filter{it.optString("assignment_status")!="CANCELLED"}
+        if(shifts.isEmpty()){notice.text="Synchronize an assigned shift before recording a report.";return}
+        AlertDialog.Builder(this).setTitle("Choose reporting shift").setItems(shifts.map{"${it.optString("shift_name")} ${it.optString("assignment_date")}"}.toTypedArray()){_,i->reportScreen(action,shifts[i])}.show()
+    }
+    private fun reportScreen(action:String,shift:JSONObject){
+        reportPhoto=null;screen(if(action=="incident")"Incident report" else "Occurrence / handover")
+        text("For an emergency, contact your control room now. Queued reports may not reach it until connectivity returns.")
+        val occurred=field("UTC event time (yyyy-MM-dd HH:mm:ss)");occurred.setText(now())
+        val body=field("Facts, action taken and outstanding follow-up");body.isSingleLine=false;body.minLines=4
+        val severity=Spinner(this);severity.adapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,listOf("MEDIUM","LOW","HIGH","CRITICAL"));if(action=="incident")layout.addView(severity)
+        button("Attach camera photo"){try{startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE),REPORT_CAMERA_REQUEST)}catch(_:Exception){notice.text="Camera unavailable. Ask the supervisor to approve the camera app if kiosk restrictions block it."}}
+        button("Save encrypted report and synchronize"){
+            val value=body.text.toString().trim();if(value.isBlank()||value.length>10000){notice.text="Enter report text up to 10000 characters.";return@button}
+            val data=JSONObject().put("shift_assignment_id",shift.get("shift_assignment_id")).put("occurred_at",occurred.text.toString().trim()).put("text",value)
+            if(action=="incident")data.put("severity",severity.selectedItem.toString())
+            reportPhoto?.let{data.put("photo_base64",it)};reportPhoto=null;enqueue(action,data)
+        }
+        button("Cancel",::home)
+    }
+    private fun queueScreen(){
+        screen("Offline queue and diagnostics")
+        text("Records remain encrypted on this phone. Retry keeps the original operation ID and contents. Correct the account/site problem with your supervisor first; never clear app data.")
+        text("Full patrols can be started, scanned and completed offline after duty has been downloaded. Upload is automatic when Android permits a connected background job, or use Synchronize and refresh. A server rejection remains queued for review; queued does not mean received.")
+        for(row in client.queueSummary())text("${row.getString("uuid")} · ${row.getString("action")} · blocked=${row.getBoolean("blocked")} · HTTP ${row.getInt("error_status")}")
+        val reason=field("Supervisor reference / reason for retry")
+        button("Retry unchanged blocked events"){try{client.retryBlocked(reason.text.toString());synchronize()}catch(e:Exception){notice.text=e.message}}
+        button("Upload safe diagnostic snapshot"){background{client.uploadDiagnostics();runOnUiThread{notice.text="Diagnostic snapshot uploaded; no report text, photos or location included."}}}
+        button("Back",::home)
+    }
 }

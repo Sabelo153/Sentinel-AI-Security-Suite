@@ -7,7 +7,7 @@ use Sentinel\Repositories\OperationalRepository;
 final class AlertNotificationService
 {
     private const SEVERITIES = ['LOW','MEDIUM','HIGH','CRITICAL'];
-    public function __construct(private readonly OperationalRepository $records, private readonly RuntimeContext $context, private readonly AuditService $audit) {}
+    public function __construct(private readonly OperationalRepository $records, private readonly RuntimeContext $context, private readonly AuditService $audit,private readonly ?WorkflowLanguageService $languages=null) {}
     public function alerts(array $filters): array
     {
         $this->allowed($filters,['status','severity']);
@@ -53,7 +53,7 @@ final class AlertNotificationService
     public function inbox(array $filters=[]):array
     {
         $this->allowed($filters,[]);$actor=$this->actor();
-        return $this->safe(fn()=>$this->records->list('notifications',['recipient_user_id'=>$actor],['recipient_user_id']));
+        $rows=$this->safe(fn()=>$this->records->list('notifications',['recipient_user_id'=>$actor],['recipient_user_id']));if($this->languages!==null)foreach($rows as&$row){$t=$this->languages->read(['entity_kind'=>'NOTIFICATION','entity_id'=>$row['notification_id']]);$row=array_merge($row,$t['content'],['display_language'=>$t['display_language'],'translation_fallback'=>$t['fallback']]);}unset($row);return $rows;
     }
     public function getNotification(string $id):array
     {

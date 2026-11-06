@@ -15,9 +15,18 @@ final class GuardWorkflowServiceTest extends TestCase
         $db->execute("INSERT INTO users VALUES (1,101,1,'ACTIVE'),(2,202,2,'ACTIVE'),(3,101,3,'ACTIVE')");$db->execute("INSERT INTO employees VALUES (1,101,'ACTIVE'),(2,202,'ACTIVE'),(3,101,'ACTIVE')");$db->execute("INSERT INTO shift_assignments VALUES (1,101,1,'ASSIGNED',1,NULL,NULL,'2026-09-14',NULL),(2,202,2,'ASSIGNED',2,NULL,NULL,'2026-09-14',NULL),(3,101,3,'ASSIGNED',1,NULL,NULL,'2026-09-14',NULL)");
         $context=new RuntimeContext();$context->setTenantId(101);$context->setUser('1');$container=new Container();
         $container->instance('location_management_service',new class($db){public function __construct(private Database $db){}public function recordLocation(array $data):array{$this->db->execute('INSERT INTO recorded (company_id,employee_id,user_id) VALUES (101,:employee_id,:user_id)',['employee_id'=>$data['employee_id'],'user_id'=>$data['user_id']]);return$data;}});
-        return[$db,$context,new GuardWorkflowService($db,$context,$container)];
+        return[$db,$context,new GuardWorkflowService($db,$context,$container),$container];
     }
     private function command():array{return['operation_uuid'=>'a0000000-0000-4000-8000-000000000001','action'=>'location','data'=>['latitude'=>-26.2,'longitude'=>28.0,'captured_at'=>'2026-09-14 08:00:00']];}
+    public function testQueuedNfcScansKeepCaptureTimeAndRetryWithoutCreatingDuplicateVisits():void {
+        [$db,$context,$service,$container]=$this->fixture();
+        $db->execute('CREATE TABLE employee_assignments(employee_assignment_id INTEGER,company_id INTEGER,employee_id INTEGER)');$db->execute('INSERT INTO employee_assignments VALUES(1,101,1)');
+        $db->execute('CREATE TABLE patrol_sessions(patrol_session_id INTEGER,company_id INTEGER,employee_assignment_id INTEGER,patrol_route_id INTEGER,deleted_at TEXT)');$db->execute('INSERT INTO patrol_sessions VALUES(1,101,1,5,NULL)');
+        $db->execute('CREATE TABLE patrol_checkpoints(patrol_checkpoint_id INTEGER,company_id INTEGER,patrol_route_id INTEGER,nfc_tag TEXT,qr_code TEXT,status TEXT,deleted_at TEXT)');$db->execute("INSERT INTO patrol_checkpoints VALUES(1,101,5,'04:a1:b2:c3:d4:e5:f6','QR-A','ACTIVE',NULL),(2,202,5,'04a1b2c3d4e5f6','QR-B','ACTIVE',NULL)");
+        $container->instance('patrol_checkpoint_event_management_service',new class($db){public function __construct(private Database $db){}public function recordEvent(string $id,array $data):array{$this->db->execute('INSERT INTO recorded(company_id,employee_id,user_id) VALUES(101,1,1)');return ['session'=>$id]+$data;}});
+        $command=['operation_uuid'=>uuid4(),'action'=>'checkpoint','data'=>['patrol_session_id'=>1,'method'=>'NFC','code'=>'04 A1 B2 C3 D4 E5 F6','recorded_at'=>'2026-09-14 08:15:00']];$first=$service->command($command);self::assertSame('2026-09-14 08:15:00',$first['recorded_at']);self::assertSame('Captured by NFC',$first['event_notes']);self::assertSame($first,$service->command($command));self::assertCount(1,$db->fetchAll('SELECT * FROM recorded'));
+        $db->execute("INSERT INTO patrol_checkpoints VALUES(3,101,5,'04a1b2c3d4e5f6','QR-C','ACTIVE',NULL)");$command['operation_uuid']=uuid4();$this->assertHttpStatus(409,fn()=>$service->command($command));self::assertCount(1,$db->fetchAll('SELECT * FROM recorded'));
+    }
     private function assertHttpStatus(int $status,callable $operation):void{try{$operation();self::fail('Expected controlled error');}catch(HttpException $e){self::assertSame($status,$e->statusCode());}}
     public function testRetriesReturnSameResultWithoutRepeatingMutation():void
     {

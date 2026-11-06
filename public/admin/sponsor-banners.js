@@ -1,0 +1,11 @@
+(() => {
+  'use strict';
+  const safeViews=new Set(['dashboard','help','company-workspace','release-notices']);let generation=0,timer=null,currentView='',currentRequest=null;
+  function clear(){generation++;clearInterval(timer);timer=null;const slot=document.getElementById('sponsorSlot');if(slot){slot.replaceChildren();slot.hidden=true;}}
+  function show(view,request){clear();currentView=view;currentRequest=request;if(!safeViews.has(view))return;let slot=document.getElementById('sponsorSlot');if(!slot){slot=document.createElement('aside');slot.id='sponsorSlot';slot.setAttribute('aria-label','Sponsored');slot.style.cssText='margin:12px 24px;padding:12px 16px;border:1px solid #d9e2dc;border-radius:8px;background:#fff';document.querySelector('#appView .topbar')?.insertAdjacentElement('afterend',slot);}const turn=generation,session=sessionStorage.getItem('sentinel_admin_token');
+    async function refresh(){slot.hidden=true;slot.replaceChildren();if(!session||document.visibilityState==='hidden')return;try{const {payload}=await request('/auth/sponsor'),data=payload?.data;if(turn!==generation||session!==sessionStorage.getItem('sentinel_admin_token')||data?.enabled!==true||data.plan_code!=='FREE'||!data.campaign)return;const c=data.campaign,u=new URL(c.url,location.origin);if(!['https:','http:'].includes(u.protocol)||(u.origin!==location.origin&&u.protocol!=='https:')||u.username||u.password)return;const badge=document.createElement('small'),title=document.createElement('strong'),text=document.createElement('p'),link=document.createElement('a');badge.textContent='Sponsored · Free plan';title.textContent=String(c.title);text.textContent=String(c.body);link.textContent=String(c.cta);link.href=u.href;link.rel='sponsored noopener noreferrer';if(u.origin!==location.origin)link.target='_blank';slot.replaceChildren(badge,document.createElement('br'),title,text,link);slot.hidden=false;}catch{/* Unknown subscription/network state never displays an ad. */}}
+    void refresh();timer=setInterval(refresh,15000);
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&currentRequest&&safeViews.has(currentView))show(currentView,currentRequest);else if(document.visibilityState==='hidden')document.getElementById('sponsorSlot')?.replaceChildren();});
+  window.SentinelSponsors={show,clear};
+})();

@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#062342">
   <link rel="stylesheet" href="admin.css?v=6">
   <link rel="stylesheet" href="branding.css">
-  <link rel="stylesheet" href="workspace.css?v=1">
+  <link rel="stylesheet" href="workspace.css?v=2">
 </head>
 <body>
   <div id="adminProgress" class="admin-progress" aria-hidden="true"></div>
@@ -26,6 +26,7 @@
         <p class="login-intro">Sign in to manage your team, sites and daily operations.</p>
         <label>Email or username<input id="identifier" name="identifier" autocomplete="username" required></label>
         <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+        <label>Authenticator or recovery code (if enabled)<input id="authenticatorCode" name="code" pattern="[0-9]{6}|[a-fA-F0-9]{16}" autocomplete="one-time-code"></label>
         <button type="submit" class="primary">Sign in</button>
         <button id="openSignup" type="button" class="secondary">Create organisation account</button>
       </form>
@@ -53,6 +54,7 @@
       <div class="brand"><img class="brand-mark" src="assets/sentinel-logo.png" alt=""><span>Sentinel<small class="brand-caption">Company workspace</small></span><button id="sidebarClose" class="sidebar-close" type="button" aria-label="Close navigation">&#215;</button></div>
       <label class="nav-search">Find a page<input id="navSearch" type="search" placeholder="Search navigation" autocomplete="off"></label>
       <nav id="nav" aria-label="Administration navigation"></nav>
+      <a class="nav-item" href="/downloads" target="_blank" rel="noopener">Install / update Android APK</a>
       <button id="logoutButton" class="nav-logout" type="button">Sign out</button>
     </aside>
     <section class="workspace">
@@ -74,8 +76,23 @@
   <template id="loadingTemplate"><div class="loading-state" role="status" aria-label="Loading data"><span class="loading-line wide"></span><span class="loading-line"></span><span class="loading-line short"></span><span class="loading-cards"><i></i><i></i><i></i></span><b>Loading your workspace…</b></div></template>
   <script src="operations.js?v=4"></script>
   <script src="/assets/markets.js"></script><script src="signup.js"></script>
-  <script src="patrols.js?v=1"></script>
-  <script src="admin.js?v=9"></script>
+  <script src="patrols.js?v=2"></script>
+  <script src="support-workspace.js?v=1"></script>
+  <script src="release-workspace.js?v=1"></script>
+  <script src="control-room.js?v=2"></script>
+  <script src="photo-report-editor.js?v=1"></script>
+  <script src="site-assurance.js?v=2"></script>
+  <script src="client-workflows.js?v=2"></script>
+  <script src="operational-readiness.js?v=2"></script>
+  <script src="control-geo-map.js?v=1"></script>
+  <script src="operations-hub.js?v=2"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="business-operations.js?v=2"></script>
+  <script src="workforce-assurance.js?v=2"></script>
+  <script src="service-delivery.js?v=2"></script>
+  <script src="sponsor-banners.js?v=1"></script>
+  <script src="workspace-ui.js?v=1"></script>
+  <script src="admin.js?v=16"></script>
 </body>
 </html>
 

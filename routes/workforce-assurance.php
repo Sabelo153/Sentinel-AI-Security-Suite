@@ -1,0 +1,31 @@
+<?php
+declare(strict_types=1);
+use Sentinel\Core\{Container,Router,Request,Response};
+return static function(Router $router,Container $container):void {
+    $o=static fn(string $p):array=>['auth'=>true,'tenant'=>true,'permission'=>$p];
+    $json=static fn(mixed $data):Response=>Response::json(['data'=>$data])->withHeader('Cache-Control','no-store');
+    $learning=static fn()=>$container->make('learning_portal_service');$found=static fn()=>$container->make('found_property_service');$stock=static fn()=>$container->make('stock_uniform_service');$cases=static fn()=>$container->make('investigation_case_service');
+    foreach([false,true]as$self)$router->get($self?'/api/v1/my-learning':'/api/v1/learning-courses',static fn(Request $r):Response=>$json($learning()->list($r->queryParams(),$self)),$o($self?'learning.self':'learning.view'));
+    $router->post('/api/v1/learning-courses',static fn(Request $r):Response=>$json($learning()->create($r->json())),$o('learning.manage'));
+    $router->post('/api/v1/learning-courses/{id}/publish',static fn(Request $r,array $p):Response=>$json($learning()->publish((string)$p['id'])),$o('learning.manage'));
+    $router->post('/api/v1/learning-courses/{id}/assign',static fn(Request $r,array $p):Response=>$json($learning()->assign((string)$p['id'],$r->json())),$o('learning.manage'));
+    $router->post('/api/v1/my-learning/{id}/read',static fn(Request $r,array $p):Response=>$json($learning()->readLesson((string)$p['id'],$r->json())),$o('learning.self'));
+    $router->post('/api/v1/my-learning/{id}/submit',static fn(Request $r,array $p):Response=>$json($learning()->submit((string)$p['id'],$r->json())),$o('learning.self'));
+    $router->post('/api/v1/learning-certificates/{id}/revoke',static fn(Request $r,array $p):Response=>$json($learning()->revoke((string)$p['id'],$r->json())),$o('learning.manage'));
+    $router->get('/api/v1/found-property',static fn(Request $r):Response=>$json($found()->list($r->queryParams())),$o('lost_found.view'));
+    $router->post('/api/v1/found-property',static fn(Request $r):Response=>$json($found()->create($r->json())),$o('lost_found.manage'));
+    foreach(['photo','receipt']as$action)$router->get('/api/v1/found-property/{id}/'.$action,static fn(Request $r,array $p):Response=>$json($found()->$action((string)$p['id'])),$o('lost_found.view'));
+    foreach(['move','collect','dispose']as$action)$router->post('/api/v1/found-property/{id}/'.$action,static fn(Request $r,array $p):Response=>$json($found()->action((string)$p['id'],$action,$r->json())),$o($action==='dispose'?'lost_found.dispose':'lost_found.manage'));
+    foreach([false,true]as$self)$router->get($self?'/api/v1/my-uniforms':'/api/v1/stock-items',static fn(Request $r):Response=>$json($stock()->list($r->queryParams(),$self)),$o($self?'stock.self':'stock.view'));
+    $router->post('/api/v1/stock-items',static fn(Request $r):Response=>$json($stock()->create($r->json())),$o('stock.manage'));
+    foreach(['receive','adjust','issue','return','writeoff','cancel']as$action)$router->post('/api/v1/stock-items/{id}/'.$action,static fn(Request $r,array $p):Response=>$json($stock()->movement((string)$p['id'],$action,$r->json())),$o(in_array($action,['adjust','writeoff'],true)?'stock.adjust':'stock.manage'));
+    $router->post('/api/v1/my-uniforms/{id}/accept',static fn(Request $r,array $p):Response=>$json($stock()->accept((string)$p['id'],$r->json())),$o('stock.self'));
+    foreach([false,true]as$self)$router->get(($self?'/api/v1/my-uniforms':'/api/v1/stock-allocations').'/{id}/receipt',static fn(Request $r,array $p):Response=>$json($stock()->receipt((string)$p['id'],$self)),$o($self?'stock.self':'stock.view'));
+    $router->get('/api/v1/investigations',static fn(Request $r):Response=>$json($cases()->list($r->queryParams())),$o('investigations.view'));
+    $router->post('/api/v1/investigations',static fn(Request $r):Response=>$json($cases()->create($r->json())),$o('investigations.manage'));
+    foreach(['note','action','upload','reassign']as$action)$router->post('/api/v1/investigations/{id}/'.$action,static fn(Request $r,array $p):Response=>$json($cases()->$action((string)$p['id'],$r->json())),$o('investigations.manage'));
+    $router->post('/api/v1/investigation-actions/{id}/reassign',static fn(Request $r,array $p):Response=>$json($cases()->reassignAction((string)$p['id'],$r->json())),$o('investigations.manage'));
+    $router->post('/api/v1/investigation-actions/{id}/complete',static fn(Request $r,array $p):Response=>$json($cases()->complete((string)$p['id'],$r->json())),$o('investigations.manage'));
+    foreach(['begin','submit','approve','return','reopen']as$action)$router->post('/api/v1/investigations/{id}/'.$action,static fn(Request $r,array $p):Response=>$json($cases()->transition((string)$p['id'],$action,$r->json())),$o(in_array($action,['approve','return','reopen'],true)?'investigations.review':'investigations.manage'));
+    $router->get('/api/v1/investigations/{id}/evidence/{evidence}',static fn(Request $r,array $p):Response=>$json($cases()->original((string)$p['id'],(string)$p['evidence'])),$o('investigations.view'));
+};

@@ -51,6 +51,7 @@ final class PatrolCheckpointManagementService
     {
         $data = $this->validate($input, false);
         $this->validateReferences($data);
+        if(($data['status']??'ACTIVE')==='ACTIVE'&&isset($data['nfc_tag'])&&$this->checkpoints->nfcExistsForRoute((string)$data['patrol_route_id'],$data['nfc_tag']))throw HttpException::conflict('This NFC UID already identifies an active checkpoint on this route.');
 
         try {
             if ($this->checkpoints->sequenceExistsForRoute((string) $data['patrol_route_id'], $data['checkpoint_order'])) {
@@ -71,6 +72,7 @@ final class PatrolCheckpointManagementService
         $patch = $this->validate($input, true);
         $effective = array_merge($existing, $patch);
         $this->validateReferences($effective);
+        if(($effective['status']??'ACTIVE')==='ACTIVE'&&isset($effective['nfc_tag'])&&$this->checkpoints->nfcExistsForRoute((string)$effective['patrol_route_id'],$effective['nfc_tag'],$checkpointId))throw HttpException::conflict('This NFC UID already identifies an active checkpoint on this route.');
 
         try {
             if ($this->checkpoints->sequenceExistsForRoute((string) $effective['patrol_route_id'], (int) $effective['checkpoint_order'], $checkpointId)) {
@@ -114,6 +116,7 @@ final class PatrolCheckpointManagementService
                 throw HttpException::unprocessable(ucfirst(str_replace('_', ' ', $field)) . ' is invalid.', 'invalid_' . $field);
             }
         }
+        if(array_key_exists('nfc_tag',$data)&&$data['nfc_tag']!==null)$data['nfc_tag']=$data['nfc_tag']===''?null:\Sentinel\Security\NfcUid::normalize($data['nfc_tag']);
         foreach (['gps_lat', 'gps_long'] as $field) {
             if (array_key_exists($field, $data) && $data[$field] !== null) {
                 $data[$field] = $this->coordinate($data[$field], $field);

@@ -46,11 +46,15 @@ final class GuardWorkflowService
     {
         $this->allowed($input,['operation_uuid','action','data']);
         if(!is_string($input['operation_uuid']??null)||preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/Di',$input['operation_uuid'])!==1)throw HttpException::unprocessable('A stable operation UUID is required.');
-        if(!is_array($input['data']??null)||!in_array($input['action']??null,['clock_in','clock_out','start_patrol','finish_patrol','checkpoint','location'],true))throw HttpException::unprocessable('Invalid guard command.');
+        if(!is_array($input['data']??null)||!in_array($input['action']??null,['clock_in','clock_out','start_patrol','finish_patrol','checkpoint','location','incident','occurrence','gate_capture'],true))throw HttpException::unprocessable('Invalid guard command.');
         $data=$input['data'];ksort($data);$hash=hash('sha256',json_encode([$input['action'],$data],JSON_THROW_ON_ERROR));
         return $this->safe(function()use($input,$data,$hash):array{
             $owns=!$this->db->inTransaction();if($owns)$this->db->beginTransaction();
             try{
+                // Match roster/relief lock ordering before taking the actor lock or
+                // reading a shift. A simultaneous relief cannot leave attendance
+                // attached to the employee who was just replaced.
+                if($this->db->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME)==='mysql')$this->db->fetch('SELECT company_id FROM companies WHERE company_id=:company FOR UPDATE',['company'=>$this->context->requireTenant()]);
                 // Lock this actor before retry lookup and command execution to serialize retries.
                 $actor=$this->actor(true);$params=['company_id'=>$this->context->requireTenant(),'user_id'=>$actor['user_id'],'operation_uuid'=>strtolower($input['operation_uuid'])];
                 $receipt=$this->db->fetch('SELECT request_hash,response_json FROM mobile_operations WHERE company_id=:company_id AND user_id=:user_id AND operation_uuid=:operation_uuid',$params);
@@ -71,6 +75,38 @@ final class GuardWorkflowService
     private function execute(string $action,array $data,array $actor):array
     {
         $employee=(string)$actor['employee_id'];$company=$this->context->requireTenant();
+        if($action==='gate_capture'){
+            $this->allowed($data,['capture_uuid','shift_assignment_id','visitor_name','vehicle_registration','purpose','direction','authorization','occurred_at']);
+            $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);
+            if($shift['assignment_status']==='CANCELLED')throw HttpException::conflict('Shift is cancelled.');
+            $at=$this->date($data['occurred_at']??null);
+            if($at<$shift['shift_start_at']||$at>$shift['shift_end_at'])throw HttpException::unprocessable('Gate capture must fall within the assigned shift.');
+            $capture=$data;unset($capture['capture_uuid'],$capture['shift_assignment_id']);
+            return $this->services->make('control_room_service')->gate($capture+['operation_uuid'=>$data['capture_uuid']??null,'site_id'=>$shift['site_id']]);
+        }
+        if(in_array($action,['incident','occurrence'],true)){
+            $this->allowed($data,['shift_assignment_id','occurred_at','text','severity','photo_base64']);
+            $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);
+            if($shift['assignment_status']==='CANCELLED')throw HttpException::conflict('Cannot report against a cancelled shift.');
+            $at=$this->date($data['occurred_at']??null);
+            if(!is_string($data['text']??null)||trim($data['text'])===''||mb_strlen($data['text'])>10000)throw HttpException::unprocessable('Report text is required (maximum 10000 characters).');
+            $photo=$data['photo_base64']??null;
+            if($photo!==null){
+                if(!is_string($photo)||strlen($photo)>280000)throw HttpException::unprocessable('Photo is too large.');
+                $bytes=base64_decode($photo,true);$size=$bytes===false?false:@getimagesizefromstring($bytes);
+                if($size===false||$size[2]!==IMAGETYPE_JPEG||strlen($bytes)>200000||$size[0]>4096||$size[1]>4096)throw HttpException::unprocessable('Photo must be a JPEG below 200 KB and 4096 pixels.');
+            }
+            if($action==='incident'){
+                $row=$this->services->make('incident_management_service')->createIncident(['site_id'=>$shift['site_id'],'employee_id'=>$employee,'reporter_user_id'=>$actor['user_id'],'shift_assignment_id'=>$shift['shift_assignment_id'],'incident_type'=>'GUARD_REPORT','incident_category'=>'FIELD','severity'=>$data['severity']??'MEDIUM','occurred_at'=>$at,'reported_at'=>gmdate('Y-m-d H:i:s'),'description'=>$data['text']]);
+                $id=(string)$row['incident_id'];
+            }else{
+                $row=$this->services->make('occurrence_book_service')->createEntry(['site_id'=>$shift['site_id'],'employee_id'=>$employee,'shift_assignment_id'=>$shift['shift_assignment_id'],'entry_type'=>'GUARD_HANDOVER','occurred_at'=>$at,'entry_text'=>$data['text'],'handover_required'=>true]);
+                $id=(string)$row['occurrence_entry_id'];
+            }
+            if($photo!==null)$this->db->execute('INSERT INTO report_photos (company_id,report_type,report_id,image_base64,created_by_user_id) VALUES (:company,:type,:id,:image,:actor)',['company'=>$company,'type'=>$action,'id'=>$id,'image'=>$photo,'actor'=>$actor['user_id']]);
+            $this->services->make('audit_service')->record($action,'mobile_report_created',$id);
+            return ['report_type'=>$action,'report_id'=>$id,'photo_attached'=>$photo!==null];
+        }
         if($action==='clock_in'){
             $this->allowed($data,['shift_assignment_id','occurred_at']);$at=$this->date($data['occurred_at']??null);
             $shift=$this->ownShift($this->id($data['shift_assignment_id']??null),$employee);
@@ -100,6 +136,7 @@ final class GuardWorkflowService
             $this->allowed($data,['patrol_session_id','method','code','recorded_at']);$id=$this->id($data['patrol_session_id']??null);$session=$this->ownPatrol($id,$employee);$at=$this->date($data['recorded_at']??null);
             $column=match($data['method']??null){'QR'=>'qr_code','NFC'=>'nfc_tag',default=>throw HttpException::unprocessable('Checkpoint method must be QR or NFC.')};
             if(!is_string($data['code']??null)||$data['code']===''||strlen($data['code'])>255)throw HttpException::unprocessable('Invalid checkpoint code.');
+            if($data['method']==='NFC'){$data['code']=\Sentinel\Security\NfcUid::normalize($data['code']);$column="LOWER(REPLACE(REPLACE(REPLACE(nfc_tag,':',''),'-',''),' ',''))";}
             $rows=$this->db->fetchAll("SELECT patrol_checkpoint_id FROM patrol_checkpoints WHERE company_id=:company_id AND patrol_route_id=:route_id AND $column=:code AND status='ACTIVE' AND deleted_at IS NULL LIMIT 2",['company_id'=>$company,'route_id'=>$session['patrol_route_id'],'code'=>$data['code']]);
             if($rows===[])throw HttpException::notFound('Checkpoint not found.');if(count($rows)!==1)throw HttpException::conflict('Checkpoint code is ambiguous.');
             return $this->services->make('patrol_checkpoint_event_management_service')->recordEvent($id,['patrol_checkpoint_id'=>$rows[0]['patrol_checkpoint_id'],'recorded_at'=>$at,'event_type'=>'VISITED','event_notes'=>'Captured by '.$data['method']]);

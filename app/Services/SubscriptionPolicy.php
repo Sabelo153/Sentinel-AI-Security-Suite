@@ -26,10 +26,38 @@ final class SubscriptionPolicy
     {
         if ($plan === 'ENTERPRISE') return true;
         if ($permission === 'users.password_change') return true;
+        // Recovery access is still explicitly controlled by RBAC on every plan.
+        if (in_array($permission, ['support.view', 'support.manage', 'support.delegated_view', 'client_portal.read'], true)) return self::isKnownPlan($plan);
         $module = explode('.', $permission, 2)[0];
+        if(in_array($permission,['alarm_response.self','guard_transport.self','post_orders.self','continuity.self','extra_services.client','client_mobilisation.client','risk_assessments.client'],true)||in_array($module,['post_orders','continuity'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['alarm_response','operations_analytics','subcontractors'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['guard_transport','equipment_checks','control_handover','extra_services','client_mobilisation','risk_assessments'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($permission,['learning.self','stock.self'],true)||$module==='lost_found')return self::isKnownPlan($plan);
+        if(in_array($module,['learning','stock'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if($module==='investigations')return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['visitor_invites','backups','pilot_setup','business_ops'],true)||in_array($permission,['shift_offers.self','fleet.self','renewals.client'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['shift_offers','fleet','renewals'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['customer_support','release_notices','operational_alerts'],true)||$permission==='service_reviews.client')return self::isKnownPlan($plan);
+        if($module==='service_reviews')return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['radio','control_map'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
+        if($module==='integrations')return $plan==='ENTERPRISE';
+        if(in_array($module,['company_branding','company_workspace','workflow_languages','emergency_procedures'],true)||$permission==='key_register.self')return self::isKnownPlan($plan);
+        if(in_array($module,['key_register','replacement_suggestions'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['site_access','site_workspace','site_scope'],true)||in_array($permission,['availability.self','client_requests.client','report_reviews.client','quotations.client'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['inspection_forms','client_requests','report_reviews','availability','quotations'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if($permission==='client_reports.schedule')return self::isKnownPlan($plan);
+        if($module==='client_reports')return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if($permission==='service_levels.client_read')return self::isKnownPlan($plan);
+        if(in_array($module,['site_instructions','handovers','retention'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['training','maintenance','service_levels'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['evidence','photo_reports'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['readiness','device_health'],true))return self::isKnownPlan($plan);
+        if($module==='gate_register')return self::isKnownPlan($plan);
+        if(in_array($module,['rostering','billing'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
+        if(in_array($module,['dispatch','lone_worker'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);
         $free = ['occurrence_book', 'sites', 'dashboard', 'subscriptions', 'incidents', 'visitors', 'vehicles', 'visitor_visits', 'access_events', 'inspections', 'alerts', 'notifications', 'people', 'employees', 'users', 'roles', 'permissions'];
-        $essential = [...$free, 'clients', 'branches', 'departments', 'positions', 'employee_assignments', 'guard_site_assignments', 'posts', 'contracts', 'guards', 'shift_assignments', 'attendance', 'reports'];
-        $professional = [...$essential, 'guard', 'patrol_routes', 'patrol_checkpoints', 'patrol_sessions', 'devices', 'device_assignments', 'device_sessions', 'locations', 'gps_locations', 'gps_events', 'geofences', 'supervisor'];
+        $essential = [...$free, 'compliance', 'equipment', 'client_portal', 'payroll_export', 'clients', 'branches', 'departments', 'positions', 'employee_assignments', 'guard_site_assignments', 'posts', 'contracts', 'guards', 'shift_assignments', 'attendance', 'reports'];
+        $professional = [...$essential, 'managed_android', 'escalations', 'guard', 'patrol_routes', 'patrol_checkpoints', 'patrol_sessions', 'devices', 'device_assignments', 'device_sessions', 'locations', 'gps_locations', 'gps_events', 'geofences', 'supervisor'];
         return in_array($module, match ($plan) {'FREE' => $free, 'ESSENTIAL' => $essential, 'PROFESSIONAL' => $professional, default => []}, true);
     }
 }

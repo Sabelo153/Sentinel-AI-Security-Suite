@@ -3,6 +3,88 @@
 -- Preflight: any row below is a naming conflict requiring review.
 SELECT p.permission_code AS existing_code, seed.permission_code AS requested_code
 FROM permissions p JOIN (
+SELECT 'learning.view' AS permission_code, 'learning' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'learning.manage' AS permission_code, 'learning' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'learning.self' AS permission_code, 'learning' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'lost_found.view' AS permission_code, 'lost_found' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lost_found.manage' AS permission_code, 'lost_found' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lost_found.dispose' AS permission_code, 'lost_found' AS module_name, 'dispose' AS action_name
+UNION ALL
+SELECT 'investigations.view' AS permission_code, 'investigations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'investigations.manage' AS permission_code, 'investigations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'investigations.review' AS permission_code, 'investigations' AS module_name, 'review' AS action_name
+UNION ALL
+SELECT 'stock.view' AS permission_code, 'stock' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'stock.manage' AS permission_code, 'stock' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'stock.adjust' AS permission_code, 'stock' AS module_name, 'adjust' AS action_name
+UNION ALL
+SELECT 'stock.self' AS permission_code, 'stock' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'alarm_response.view' AS permission_code, 'alarm_response' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'alarm_response.manage' AS permission_code, 'alarm_response' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'guard_transport.view' AS permission_code, 'guard_transport' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'guard_transport.manage' AS permission_code, 'guard_transport' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'post_orders.view' AS permission_code, 'post_orders' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'post_orders.manage' AS permission_code, 'post_orders' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'continuity.view' AS permission_code, 'continuity' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'continuity.manage' AS permission_code, 'continuity' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment_checks.view' AS permission_code, 'equipment_checks' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment_checks.manage' AS permission_code, 'equipment_checks' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_handover.view' AS permission_code, 'control_handover' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'control_handover.manage' AS permission_code, 'control_handover' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'extra_services.view' AS permission_code, 'extra_services' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'extra_services.manage' AS permission_code, 'extra_services' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.view' AS permission_code, 'client_mobilisation' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.manage' AS permission_code, 'client_mobilisation' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'risk_assessments.view' AS permission_code, 'risk_assessments' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'risk_assessments.manage' AS permission_code, 'risk_assessments' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'subcontractors.view' AS permission_code, 'subcontractors' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'subcontractors.manage' AS permission_code, 'subcontractors' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'alarm_response.self' AS permission_code, 'alarm_response' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'guard_transport.self' AS permission_code, 'guard_transport' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'post_orders.self' AS permission_code, 'post_orders' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'continuity.self' AS permission_code, 'continuity' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'extra_services.client' AS permission_code, 'extra_services' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.client' AS permission_code, 'client_mobilisation' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'risk_assessments.client' AS permission_code, 'risk_assessments' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'operations_analytics.view' AS permission_code, 'operations_analytics' AS module_name, 'view' AS action_name
+UNION ALL
 SELECT 'access_events.create' AS permission_code, 'access_events' AS module_name, 'create' AS action_name
 UNION ALL
 SELECT 'access_events.view' AS permission_code, 'access_events' AS module_name, 'view' AS action_name
@@ -200,6 +282,240 @@ UNION ALL
 SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS action_name
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
+UNION ALL
+SELECT 'dispatch.view' AS permission_code, 'dispatch' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'dispatch.manage' AS permission_code, 'dispatch' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lone_worker.view' AS permission_code, 'lone_worker' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lone_worker.manage' AS permission_code, 'lone_worker' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'rostering.view' AS permission_code, 'rostering' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'rostering.manage' AS permission_code, 'rostering' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'gate_register.view' AS permission_code, 'gate_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'gate_register.manage' AS permission_code, 'gate_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'billing.view' AS permission_code, 'billing' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'billing.manage' AS permission_code, 'billing' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'device_health.view' AS permission_code, 'device_health' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.view' AS permission_code, 'readiness' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.manage' AS permission_code, 'readiness' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_instructions.view' AS permission_code, 'site_instructions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_instructions.manage' AS permission_code, 'site_instructions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'handovers.view' AS permission_code, 'handovers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'handovers.manage' AS permission_code, 'handovers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'training.view' AS permission_code, 'training' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'training.manage' AS permission_code, 'training' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.view' AS permission_code, 'evidence' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.view' AS permission_code, 'shift_offers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.manage' AS permission_code, 'shift_offers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'shift_offers.self' AS permission_code, 'shift_offers' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'visitor_invites.view' AS permission_code, 'visitor_invites' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'visitor_invites.manage' AS permission_code, 'visitor_invites' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'visitor_invites.client' AS permission_code, 'visitor_invites' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'visitor_invites.gate' AS permission_code, 'visitor_invites' AS module_name, 'gate' AS action_name
+UNION ALL
+SELECT 'fleet.view' AS permission_code, 'fleet' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'fleet.manage' AS permission_code, 'fleet' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'fleet.self' AS permission_code, 'fleet' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'renewals.view' AS permission_code, 'renewals' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'renewals.manage' AS permission_code, 'renewals' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'renewals.client' AS permission_code, 'renewals' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'backups.view' AS permission_code, 'backups' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'backups.manage' AS permission_code, 'backups' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'backups.run' AS permission_code, 'backups' AS module_name, 'run' AS action_name
+UNION ALL
+SELECT 'pilot_setup.view' AS permission_code, 'pilot_setup' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'pilot_setup.manage' AS permission_code, 'pilot_setup' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'business_ops.run' AS permission_code, 'business_ops' AS module_name, 'run' AS action_name
+UNION ALL
+SELECT 'radio.self' AS permission_code, 'radio' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'radio.manage' AS permission_code, 'radio' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_map.view' AS permission_code, 'control_map' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.view' AS permission_code, 'service_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.manage' AS permission_code, 'service_reviews' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_reviews.client' AS permission_code, 'service_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'integrations.deliver' AS permission_code, 'integrations' AS module_name, 'deliver' AS action_name
+UNION ALL
+SELECT 'integrations.view' AS permission_code, 'integrations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'integrations.manage' AS permission_code, 'integrations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.view' AS permission_code, 'customer_support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'customer_support.manage' AS permission_code, 'customer_support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.self' AS permission_code, 'customer_support' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'release_notices.view' AS permission_code, 'release_notices' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'release_notices.manage' AS permission_code, 'release_notices' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'operational_alerts.view' AS permission_code, 'operational_alerts' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'operational_alerts.manage' AS permission_code, 'operational_alerts' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'key_register.view' AS permission_code, 'key_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'key_register.manage' AS permission_code, 'key_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'key_register.self' AS permission_code, 'key_register' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.view' AS permission_code, 'replacement_suggestions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.manage' AS permission_code, 'replacement_suggestions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.view' AS permission_code, 'emergency_procedures' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.manage' AS permission_code, 'emergency_procedures' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'workflow_languages.self' AS permission_code, 'workflow_languages' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'workflow_languages.view' AS permission_code, 'workflow_languages' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'workflow_languages.manage' AS permission_code, 'workflow_languages' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'company_branding.read' AS permission_code, 'company_branding' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'company_workspace.view' AS permission_code, 'company_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'company_workspace.manage' AS permission_code, 'company_workspace' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_access.view' AS permission_code, 'site_access' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_access.manage' AS permission_code, 'site_access' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_workspace.view' AS permission_code, 'site_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.view' AS permission_code, 'inspection_forms' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.manage' AS permission_code, 'inspection_forms' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.view' AS permission_code, 'client_requests' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_requests.manage' AS permission_code, 'client_requests' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.client' AS permission_code, 'client_requests' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'availability.view' AS permission_code, 'availability' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'availability.manage' AS permission_code, 'availability' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'availability.self' AS permission_code, 'availability' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'report_reviews.view' AS permission_code, 'report_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'report_reviews.client' AS permission_code, 'report_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'quotations.view' AS permission_code, 'quotations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'quotations.manage' AS permission_code, 'quotations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'quotations.client' AS permission_code, 'quotations' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'site_scope.restricted' AS permission_code, 'site_scope' AS module_name, 'restricted' AS action_name
+UNION ALL
+SELECT 'service_levels.manage' AS permission_code, 'service_levels' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'maintenance.view' AS permission_code, 'maintenance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'maintenance.manage' AS permission_code, 'maintenance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'retention.view' AS permission_code, 'retention' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'retention.manage' AS permission_code, 'retention' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.export' AS permission_code, 'evidence' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'service_levels.client_read' AS permission_code, 'service_levels' AS module_name, 'client_read' AS action_name
+UNION ALL
+SELECT 'retention.hold' AS permission_code, 'retention' AS module_name, 'hold' AS action_name
+UNION ALL
+SELECT 'photo_reports.view' AS permission_code, 'photo_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'photo_reports.manage' AS permission_code, 'photo_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'photo_reports.export' AS permission_code, 'photo_reports' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'client_reports.view' AS permission_code, 'client_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_reports.manage' AS permission_code, 'client_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_reports.schedule' AS permission_code, 'client_reports' AS module_name, 'schedule' AS action_name
+UNION ALL
+SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'managed_android.view' AS permission_code, 'managed_android' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'managed_android.manage' AS permission_code, 'managed_android' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'compliance.view' AS permission_code, 'compliance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'compliance.manage' AS permission_code, 'compliance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment.view' AS permission_code, 'equipment' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment.manage' AS permission_code, 'equipment' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'escalations.view' AS permission_code, 'escalations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'escalations.manage' AS permission_code, 'escalations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.view' AS permission_code, 'client_portal' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_portal.manage' AS permission_code, 'client_portal' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.read' AS permission_code, 'client_portal' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'payroll_export.view' AS permission_code, 'payroll_export' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'payroll_export.manage' AS permission_code, 'payroll_export' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'support.delegated_view' AS permission_code, 'support' AS module_name, 'delegated_view' AS action_name
 UNION ALL
 SELECT 'users.view' AS permission_code, 'users' AS module_name, 'view' AS action_name
 UNION ALL
@@ -226,6 +542,88 @@ WHERE p.company_id=@sentinel_company_id AND p.permission_code<>seed.permission_c
 INSERT INTO permissions (company_id,permission_code,permission_name,module_name,action_name,permission_description,status)
 SELECT c.company_id,seed.permission_code,seed.permission_code,seed.module_name,seed.action_name,'Canonical protected API permission','ACTIVE'
 FROM companies c JOIN (
+SELECT 'learning.view' AS permission_code, 'learning' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'learning.manage' AS permission_code, 'learning' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'learning.self' AS permission_code, 'learning' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'lost_found.view' AS permission_code, 'lost_found' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lost_found.manage' AS permission_code, 'lost_found' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lost_found.dispose' AS permission_code, 'lost_found' AS module_name, 'dispose' AS action_name
+UNION ALL
+SELECT 'investigations.view' AS permission_code, 'investigations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'investigations.manage' AS permission_code, 'investigations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'investigations.review' AS permission_code, 'investigations' AS module_name, 'review' AS action_name
+UNION ALL
+SELECT 'stock.view' AS permission_code, 'stock' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'stock.manage' AS permission_code, 'stock' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'stock.adjust' AS permission_code, 'stock' AS module_name, 'adjust' AS action_name
+UNION ALL
+SELECT 'stock.self' AS permission_code, 'stock' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'alarm_response.view' AS permission_code, 'alarm_response' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'alarm_response.manage' AS permission_code, 'alarm_response' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'guard_transport.view' AS permission_code, 'guard_transport' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'guard_transport.manage' AS permission_code, 'guard_transport' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'post_orders.view' AS permission_code, 'post_orders' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'post_orders.manage' AS permission_code, 'post_orders' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'continuity.view' AS permission_code, 'continuity' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'continuity.manage' AS permission_code, 'continuity' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment_checks.view' AS permission_code, 'equipment_checks' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment_checks.manage' AS permission_code, 'equipment_checks' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_handover.view' AS permission_code, 'control_handover' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'control_handover.manage' AS permission_code, 'control_handover' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'extra_services.view' AS permission_code, 'extra_services' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'extra_services.manage' AS permission_code, 'extra_services' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.view' AS permission_code, 'client_mobilisation' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.manage' AS permission_code, 'client_mobilisation' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'risk_assessments.view' AS permission_code, 'risk_assessments' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'risk_assessments.manage' AS permission_code, 'risk_assessments' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'subcontractors.view' AS permission_code, 'subcontractors' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'subcontractors.manage' AS permission_code, 'subcontractors' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'alarm_response.self' AS permission_code, 'alarm_response' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'guard_transport.self' AS permission_code, 'guard_transport' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'post_orders.self' AS permission_code, 'post_orders' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'continuity.self' AS permission_code, 'continuity' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'extra_services.client' AS permission_code, 'extra_services' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'client_mobilisation.client' AS permission_code, 'client_mobilisation' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'risk_assessments.client' AS permission_code, 'risk_assessments' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'operations_analytics.view' AS permission_code, 'operations_analytics' AS module_name, 'view' AS action_name
+UNION ALL
 SELECT 'access_events.create' AS permission_code, 'access_events' AS module_name, 'create' AS action_name
 UNION ALL
 SELECT 'access_events.view' AS permission_code, 'access_events' AS module_name, 'view' AS action_name
@@ -423,6 +821,240 @@ UNION ALL
 SELECT 'users.unlock' AS permission_code, 'users' AS module_name, 'unlock' AS action_name
 UNION ALL
 SELECT 'users.update' AS permission_code, 'users' AS module_name, 'update' AS action_name
+UNION ALL
+SELECT 'dispatch.view' AS permission_code, 'dispatch' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'dispatch.manage' AS permission_code, 'dispatch' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lone_worker.view' AS permission_code, 'lone_worker' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lone_worker.manage' AS permission_code, 'lone_worker' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'rostering.view' AS permission_code, 'rostering' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'rostering.manage' AS permission_code, 'rostering' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'gate_register.view' AS permission_code, 'gate_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'gate_register.manage' AS permission_code, 'gate_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'billing.view' AS permission_code, 'billing' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'billing.manage' AS permission_code, 'billing' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'device_health.view' AS permission_code, 'device_health' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.view' AS permission_code, 'readiness' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'readiness.manage' AS permission_code, 'readiness' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_instructions.view' AS permission_code, 'site_instructions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_instructions.manage' AS permission_code, 'site_instructions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'handovers.view' AS permission_code, 'handovers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'handovers.manage' AS permission_code, 'handovers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'training.view' AS permission_code, 'training' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'training.manage' AS permission_code, 'training' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.view' AS permission_code, 'evidence' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.view' AS permission_code, 'shift_offers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.manage' AS permission_code, 'shift_offers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'shift_offers.self' AS permission_code, 'shift_offers' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'visitor_invites.view' AS permission_code, 'visitor_invites' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'visitor_invites.manage' AS permission_code, 'visitor_invites' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'visitor_invites.client' AS permission_code, 'visitor_invites' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'visitor_invites.gate' AS permission_code, 'visitor_invites' AS module_name, 'gate' AS action_name
+UNION ALL
+SELECT 'fleet.view' AS permission_code, 'fleet' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'fleet.manage' AS permission_code, 'fleet' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'fleet.self' AS permission_code, 'fleet' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'renewals.view' AS permission_code, 'renewals' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'renewals.manage' AS permission_code, 'renewals' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'renewals.client' AS permission_code, 'renewals' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'backups.view' AS permission_code, 'backups' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'backups.manage' AS permission_code, 'backups' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'backups.run' AS permission_code, 'backups' AS module_name, 'run' AS action_name
+UNION ALL
+SELECT 'pilot_setup.view' AS permission_code, 'pilot_setup' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'pilot_setup.manage' AS permission_code, 'pilot_setup' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'business_ops.run' AS permission_code, 'business_ops' AS module_name, 'run' AS action_name
+UNION ALL
+SELECT 'radio.self' AS permission_code, 'radio' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'radio.manage' AS permission_code, 'radio' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_map.view' AS permission_code, 'control_map' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.view' AS permission_code, 'service_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.manage' AS permission_code, 'service_reviews' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_reviews.client' AS permission_code, 'service_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'integrations.deliver' AS permission_code, 'integrations' AS module_name, 'deliver' AS action_name
+UNION ALL
+SELECT 'integrations.view' AS permission_code, 'integrations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'integrations.manage' AS permission_code, 'integrations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.view' AS permission_code, 'customer_support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'customer_support.manage' AS permission_code, 'customer_support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.self' AS permission_code, 'customer_support' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'release_notices.view' AS permission_code, 'release_notices' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'release_notices.manage' AS permission_code, 'release_notices' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'operational_alerts.view' AS permission_code, 'operational_alerts' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'operational_alerts.manage' AS permission_code, 'operational_alerts' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'key_register.view' AS permission_code, 'key_register' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'key_register.manage' AS permission_code, 'key_register' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'key_register.self' AS permission_code, 'key_register' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.view' AS permission_code, 'replacement_suggestions' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'replacement_suggestions.manage' AS permission_code, 'replacement_suggestions' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.view' AS permission_code, 'emergency_procedures' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'emergency_procedures.manage' AS permission_code, 'emergency_procedures' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'workflow_languages.self' AS permission_code, 'workflow_languages' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'workflow_languages.view' AS permission_code, 'workflow_languages' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'workflow_languages.manage' AS permission_code, 'workflow_languages' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'company_branding.read' AS permission_code, 'company_branding' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'company_workspace.view' AS permission_code, 'company_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'company_workspace.manage' AS permission_code, 'company_workspace' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_access.view' AS permission_code, 'site_access' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'site_access.manage' AS permission_code, 'site_access' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'site_workspace.view' AS permission_code, 'site_workspace' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.view' AS permission_code, 'inspection_forms' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'inspection_forms.manage' AS permission_code, 'inspection_forms' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.view' AS permission_code, 'client_requests' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_requests.manage' AS permission_code, 'client_requests' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_requests.client' AS permission_code, 'client_requests' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'availability.view' AS permission_code, 'availability' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'availability.manage' AS permission_code, 'availability' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'availability.self' AS permission_code, 'availability' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'report_reviews.view' AS permission_code, 'report_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'report_reviews.client' AS permission_code, 'report_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'quotations.view' AS permission_code, 'quotations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'quotations.manage' AS permission_code, 'quotations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'quotations.client' AS permission_code, 'quotations' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'site_scope.restricted' AS permission_code, 'site_scope' AS module_name, 'restricted' AS action_name
+UNION ALL
+SELECT 'service_levels.manage' AS permission_code, 'service_levels' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'maintenance.view' AS permission_code, 'maintenance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'maintenance.manage' AS permission_code, 'maintenance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'retention.view' AS permission_code, 'retention' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'retention.manage' AS permission_code, 'retention' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'evidence.export' AS permission_code, 'evidence' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'service_levels.client_read' AS permission_code, 'service_levels' AS module_name, 'client_read' AS action_name
+UNION ALL
+SELECT 'retention.hold' AS permission_code, 'retention' AS module_name, 'hold' AS action_name
+UNION ALL
+SELECT 'photo_reports.view' AS permission_code, 'photo_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'photo_reports.manage' AS permission_code, 'photo_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'photo_reports.export' AS permission_code, 'photo_reports' AS module_name, 'export' AS action_name
+UNION ALL
+SELECT 'client_reports.view' AS permission_code, 'client_reports' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_reports.manage' AS permission_code, 'client_reports' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_reports.schedule' AS permission_code, 'client_reports' AS module_name, 'schedule' AS action_name
+UNION ALL
+SELECT 'support.view' AS permission_code, 'support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'support.manage' AS permission_code, 'support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'managed_android.view' AS permission_code, 'managed_android' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'managed_android.manage' AS permission_code, 'managed_android' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'compliance.view' AS permission_code, 'compliance' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'compliance.manage' AS permission_code, 'compliance' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'equipment.view' AS permission_code, 'equipment' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'equipment.manage' AS permission_code, 'equipment' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'escalations.view' AS permission_code, 'escalations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'escalations.manage' AS permission_code, 'escalations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.view' AS permission_code, 'client_portal' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'client_portal.manage' AS permission_code, 'client_portal' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'client_portal.read' AS permission_code, 'client_portal' AS module_name, 'read' AS action_name
+UNION ALL
+SELECT 'payroll_export.view' AS permission_code, 'payroll_export' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'payroll_export.manage' AS permission_code, 'payroll_export' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'support.delegated_view' AS permission_code, 'support' AS module_name, 'delegated_view' AS action_name
 UNION ALL
 SELECT 'users.view' AS permission_code, 'users' AS module_name, 'view' AS action_name
 UNION ALL

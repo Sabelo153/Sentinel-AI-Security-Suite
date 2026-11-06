@@ -14,6 +14,15 @@ final class ShiftAssignmentRepository extends Repository
     public function __construct(Database $db, ?RuntimeContext $context = null) { parent::__construct($db, $context); }
     protected function table(): string { return 'shift_assignments'; }
 
+    public function serializeMutation(callable $work): array
+    {
+        $owns=!$this->db->inTransaction();if($owns)$this->db->beginTransaction();
+        try {
+            if($this->db->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME)==='mysql')$this->db->fetch('SELECT company_id FROM companies WHERE company_id=:company FOR UPDATE',['company'=>$this->requireCompanyId()]);
+            $result=$work();if($owns)$this->db->commit();return $result;
+        } catch(\Throwable $e) {if($owns&&$this->db->inTransaction())$this->db->rollBack();throw $e;}
+    }
+
     public function listForCompany(): array
     {
         $companyId = $this->requireCompanyId();

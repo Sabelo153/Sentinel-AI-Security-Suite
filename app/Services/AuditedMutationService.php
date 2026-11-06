@@ -16,6 +16,10 @@ final class AuditedMutationService
         $this->context->requireTenant();
         try {
             $this->db->beginTransaction();
+            // Use the same lock order as roster, guard commands, evidence and
+            // retention. A concurrent visit/hold/edit must not cross a cleanup
+            // eligibility check in the same tenant.
+            if($this->db->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME)==='mysql')$this->db->fetch('SELECT company_id FROM companies WHERE company_id=:company FOR UPDATE',['company'=>$this->context->requireTenant()]);
             $response = $handler($request);
             if ($response->status() >= 400) {
                 $this->db->rollBack();
@@ -32,6 +36,12 @@ final class AuditedMutationService
             return $response;
         } catch (\Throwable $error) {
             if ($this->db->inTransaction()) $this->db->rollBack();
+            // Roll back the rejected mutation, but retain the security failure
+            // counter that was rolled back with it. Login failures run outside
+            // this wrapper and already persist their own counter.
+            if ($error instanceof HttpException && $error->errorCode()==='mfa_invalid_code') {
+                $this->db->execute('UPDATE account_mfa SET locked_until=CASE WHEN failed_attempts>=4 THEN :locked ELSE locked_until END,failed_attempts=failed_attempts+1 WHERE user_id=:user AND locked_until<=:now',['locked'=>time()+900,'user'=>$this->context->user(),'now'=>time()]);
+            }
             if ($error instanceof \PDOException) throw HttpException::serviceUnavailable('The operation could not be safely recorded.', 'mutation_unavailable');
             throw $error;
         }

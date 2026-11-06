@@ -79,7 +79,7 @@
     <string name="active_patrol">Active patrol · %1$s</string>
     <string name="scan_checkpoint_qr">Scan checkpoint QR</string>
     <string name="qr_unavailable">QR scanning is unavailable. Install or enable a camera app, then try again.</string>
-    <string name="qr_camera_capture">Google scanner unavailable. Use the camera to photograph the QR code; the bundled offline scanner will read it on this phone.</string>
+    <string name="qr_camera_capture">Photograph the QR code clearly. Sentinel will read it locally on this phone.</string>
     <string name="qr_reading_photo">Reading QR from the camera preview…</string>
     <string name="qr_not_found">No readable QR code found. Move closer, keep the code in focus, and try again.</string>
     <string name="qr_scan_cancelled">QR scan cancelled.</string>

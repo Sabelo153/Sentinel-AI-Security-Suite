@@ -1,0 +1,30 @@
+<?php
+declare(strict_types=1);
+use Sentinel\Core\{Container,Router,Request,Response};
+return static function(Router $router,Container $container):void {
+    $site=static fn()=>$container->make('site_assurance_service');$evidence=static fn()=>$container->make('evidence_retention_service');
+    $opts=static fn(string $p):array=>['auth'=>true,'tenant'=>true,'permission'=>$p];$json=static fn(mixed $data):Response=>Response::json(['data'=>$data])->withHeader('Cache-Control','no-store');
+    foreach(['instructions'=>'site_instructions','acknowledgements'=>'site_instructions','handovers'=>'handovers','competencies'=>'training','requirements'=>'training','training'=>'training','maintenance'=>'maintenance','service-targets'=>'service_levels']as$resource=>$module)$router->get('/api/v1/assurance/'.$resource,static fn():Response=>$json($site()->list($resource)),$opts($module.'.view'));
+    foreach(['instructions'=>['publishInstructions','site_instructions'],'handovers'=>['createHandover','handovers'],'competencies'=>['competency','training'],'requirements'=>['requireTraining','training'],'training'=>['recordTraining','training'],'maintenance'=>['createTicket','maintenance'],'service-targets'=>['serviceTarget','service_levels']]as$path=>[$method,$module])$router->post('/api/v1/assurance/'.$path,static fn(Request $r):Response=>$json($site()->$method($r->json())),$opts($module.'.manage'));
+    $router->get('/api/v1/assurance/training-gaps',static fn():Response=>$json($site()->trainingGaps()),$opts('training.view'));
+    $router->post('/api/v1/assurance/requirements/{id}/remove',static fn(Request $r,array $p):Response=>$json($site()->removeRequirement((string)$p['id'])),$opts('training.manage'));
+    $router->post('/api/v1/assurance/training/{id}/verify',static fn(Request $r,array $p):Response=>$json($site()->verifyTraining((string)$p['id'])),$opts('training.manage'));
+    $router->post('/api/v1/assurance/training/{id}/revoke',static fn(Request $r,array $p):Response=>$json($site()->revokeTraining((string)$p['id'],$r->json())),$opts('training.manage'));
+    foreach(['start','repair','verify','cancel']as$action)$router->post('/api/v1/assurance/maintenance/{id}/'.$action,static fn(Request $r,array $p):Response=>$json($site()->ticketAction((string)$p['id'],$action,$r->json())),$opts('maintenance.manage'));
+    $router->get('/api/v1/assurance/maintenance/{id}/history',static fn(Request $r,array $p):Response=>$json($site()->ticketHistoryList((string)$p['id'])),$opts('maintenance.view'));
+    $router->get('/api/v1/assurance/service-report',static fn(Request $r):Response=>$json($site()->serviceReport($r->queryParams())),$opts('service_levels.view'));
+    $router->get('/api/v1/client/service-levels',static fn(Request $r):Response=>$json($site()->serviceReport($r->queryParams(),true)),$opts('service_levels.client_read'));
+    $router->get('/api/v1/guard/site-assurance',static fn():Response=>$json($site()->guardWorkspace()),$opts('guard.self'));
+    $router->post('/api/v1/guard/instructions/{id}/acknowledge',static fn(Request $r,array $p):Response=>$json($site()->acknowledgeInstructions((string)$p['id'])),$opts('guard.self'));
+    $router->post('/api/v1/guard/handovers',static fn(Request $r):Response=>$json($site()->createHandover($r->json(),true)),$opts('guard.self'));
+    $router->post('/api/v1/guard/handovers/{id}/accept',static fn(Request $r,array $p):Response=>$json($site()->acceptHandover((string)$p['id'],$r->json())),$opts('guard.self'));
+    $router->get('/api/v1/assurance/evidence',static fn(Request $r):Response=>$json($evidence()->evidenceList($r->queryParams())),$opts('evidence.view'));
+    $router->post('/api/v1/assurance/evidence',static fn(Request $r):Response=>$json($evidence()->addEvidence($r->json())),$opts('evidence.manage'));
+    $router->get('/api/v1/assurance/evidence/{id}/history',static fn(Request $r,array $p):Response=>$json($evidence()->history((string)$p['id'])),$opts('evidence.view'));
+    $router->get('/api/v1/assurance/evidence/{id}/download',static function(Request $r,array $p)use($evidence):Response{$data=$evidence()->download((string)$p['id']);return Response::raw($data['bytes'],200,['Content-Type'=>'application/octet-stream','Content-Disposition'=>'attachment; filename="sentinel-evidence-'.(int)$p['id'].'.bin"','X-Content-Type-Options'=>'nosniff','Cache-Control'=>'no-store','X-Evidence-SHA256'=>$data['sha256']]);},$opts('evidence.export'));
+    $router->get('/api/v1/assurance/incidents/{id}/pack',static function(Request $r,array $p)use($evidence):Response{return Response::raw(json_encode($evidence()->investigationPack((string)$p['id']),JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT),200,['Content-Type'=>'application/json','Content-Disposition'=>'attachment; filename="sentinel-investigation-'.(int)$p['id'].'.json"','X-Content-Type-Options'=>'nosniff','Cache-Control'=>'no-store']);},$opts('evidence.export'));
+    $router->get('/api/v1/assurance/retention',static fn():Response=>$json($evidence()->policies()),$opts('retention.view'));
+    foreach(['policy'=>'policy','preview'=>'preview','execute'=>'executeRetention']as$path=>$method)$router->post('/api/v1/assurance/retention/'.$path,static fn(Request $r):Response=>$json($evidence()->$method($r->json())),$opts('retention.manage'));
+    $router->post('/api/v1/assurance/retention/holds',static fn(Request $r):Response=>$json($evidence()->hold($r->json())),$opts('retention.hold'));
+    $router->post('/api/v1/assurance/retention/holds/{id}/release',static fn(Request $r,array $p):Response=>$json($evidence()->releaseHold((string)$p['id'],$r->json())),$opts('retention.manage'));
+};

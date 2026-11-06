@@ -127,3 +127,7 @@ database/seed/local/
 !composer.lock
 !package-lock.json
 !yarn.lock
+# Signed APK distribution packages are generated outside source history.
+public/downloads/*.apk
+public/downloads/guard-release.json
+.kotlin/

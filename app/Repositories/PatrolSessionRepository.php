@@ -148,6 +148,8 @@ final class PatrolSessionRepository extends Repository
         }
 
         if ($assignments !== []) {
+            $assignments[] = 'updated_at = :received_at';
+            $params['received_at'] = gmdate('Y-m-d H:i:s');
             $this->db->execute(
                 'UPDATE patrol_sessions SET ' . implode(', ', $assignments) . ' WHERE patrol_session_id = :session_id AND company_id = :company_id AND deleted_at IS NULL',
                 $params,

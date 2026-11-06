@@ -131,6 +131,54 @@ final class Application
             ),
         );
 
+        $this->container->singleton('support_workspace_service', static fn (Container $c): \Sentinel\Services\SupportWorkspaceService => new \Sentinel\Services\SupportWorkspaceService(
+            $c->make(self::SERVICE_DATABASE), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_AUDIT),
+        ));
+        $this->container->singleton('managed_android_service', static fn (Container $c): \Sentinel\Services\ManagedAndroidService => new \Sentinel\Services\ManagedAndroidService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('session_security_service', static fn (Container $c): \Sentinel\Services\SessionSecurityService => new \Sentinel\Services\SessionSecurityService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_CONFIG),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('field_operations_service', static fn (Container $c): \Sentinel\Services\FieldOperationsService => new \Sentinel\Services\FieldOperationsService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('supervisor_attention_service'),$c->make('alert_notification_service')));
+        $this->container->singleton('control_room_service', static fn(Container $c): \Sentinel\Services\ControlRoomService => new \Sentinel\Services\ControlRoomService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('field_operations_service'),$c->make('availability_service')));
+        $this->container->singleton('subcontractor_policy',static fn(Container $c)=>new \Sentinel\Services\SubcontractorPolicy($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_PERMISSION_REPOSITORY)));
+        $this->container->singleton('response_transport_service',static fn(Container $c)=>new \Sentinel\Services\ResponseTransportService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('control_room_service')));
+        $this->container->singleton('site_delivery_plan_service',static fn(Container $c)=>new \Sentinel\Services\SiteDeliveryPlanService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('operational_oversight_service',static fn(Container $c)=>new \Sentinel\Services\OperationalOversightService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('client_delivery_service',static fn(Container $c)=>new \Sentinel\Services\ClientDeliveryService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('quotation_service')));
+        $this->container->singleton('subcontractor_service',static fn(Container $c)=>new \Sentinel\Services\SubcontractorService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make(self::SERVICE_PERMISSION_REPOSITORY)));
+        $this->container->singleton('learning_portal_service',static fn(Container $c)=>new \Sentinel\Services\LearningPortalService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('found_property_service',static fn(Container $c)=>new \Sentinel\Services\FoundPropertyService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('stock_uniform_service',static fn(Container $c)=>new \Sentinel\Services\StockUniformService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('investigation_case_service',static fn(Container $c)=>new \Sentinel\Services\InvestigationCaseService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make(self::SERVICE_PERMISSION_REPOSITORY),$c->make('evidence_retention_service')));
+        $this->container->singleton('encrypted_backup_service',static fn(Container $c)=>new \Sentinel\Services\EncryptedBackupService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make(self::SERVICE_CONFIG)));
+        $this->container->singleton('sponsor_service',static fn(Container $c)=>new \Sentinel\Services\SponsorService($c->make('subscription_service'),$c->make(self::SERVICE_CONFIG)));
+        $this->container->singleton('open_shift_offer_service',static fn(Container $c)=>new \Sentinel\Services\OpenShiftOfferService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('replacement_suggestion_service'),$c->make(self::SERVICE_PERMISSION_REPOSITORY)));
+        $this->container->singleton('visitor_appointment_service',static fn(Container $c)=>new \Sentinel\Services\VisitorAppointmentService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('fleet_operations_service',static fn(Container $c)=>new \Sentinel\Services\FleetOperationsService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('contract_renewal_service',static fn(Container $c)=>new \Sentinel\Services\ContractRenewalService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('pilot_setup_service',static fn(Container $c)=>new \Sentinel\Services\PilotSetupService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make(self::SERVICE_PERMISSION_REPOSITORY),$c->make('subscription_service'),$c->make('encrypted_backup_service')));
+        $this->container->singleton('business_reminder_service',static fn(Container $c)=>new \Sentinel\Services\BusinessReminderService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('contract_renewal_service'),$c->make(self::SERVICE_PERMISSION_REPOSITORY)));
+        $this->container->singleton('webhook_transport',static fn()=>new \Sentinel\Services\SafeWebhookTransport());
+        $this->container->singleton('integration_centre_service',static fn(Container $c)=>new \Sentinel\Services\IntegrationCentreService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make(self::SERVICE_CONFIG),$c->make('webhook_transport')));
+        $this->container->singleton('radio_service',static fn(Container $c)=>new \Sentinel\Services\RadioService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('control_map_service',static fn(Container $c)=>new \Sentinel\Services\ControlMapService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('service_review_service',static fn(Container $c)=>new \Sentinel\Services\ServiceReviewService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('site_assurance_service'),$c->make('integration_centre_service')));
+        $this->container->singleton('customer_support_service',static fn(Container $c)=>new \Sentinel\Services\CustomerSupportService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('support_diagnostics_service')));
+        $this->container->singleton('operational_alert_service',static fn(Container $c)=>new \Sentinel\Services\OperationalAlertService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make(self::SERVICE_PERMISSION_REPOSITORY),$c->make('integration_centre_service')));
+        $this->container->singleton('key_custody_service',static fn(Container $c)=>new \Sentinel\Services\KeyCustodyService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('replacement_suggestion_service',static fn(Container $c)=>new \Sentinel\Services\ReplacementSuggestionService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('control_room_service')));
+        $this->container->singleton('emergency_procedure_service',static fn(Container $c)=>new \Sentinel\Services\EmergencyProcedureService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('workflow_language_service')));
+        $this->container->singleton('company_workspace_service',static fn(Container $c)=>new \Sentinel\Services\CompanyWorkspaceService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('subscription_service')));
+        $this->container->singleton('workflow_language_service',static fn(Container $c)=>new \Sentinel\Services\WorkflowLanguageService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('site_access_service', static fn(Container $c) => new \Sentinel\Services\SiteAccessService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make(self::SERVICE_PERMISSION_REPOSITORY),$c->make('subcontractor_policy')));
+        $this->container->singleton('availability_service', static fn(Container $c) => new \Sentinel\Services\AvailabilityService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('quotation_service', static fn(Container $c) => new \Sentinel\Services\QuotationService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('subscription_service'),$c->make('site_access_service')));
+        $this->container->singleton('inspection_forms_service', static fn(Container $c) => new \Sentinel\Services\InspectionFormsService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service'),$c->make('workflow_language_service')));
+        $this->container->singleton('client_care_service', static fn(Container $c) => new \Sentinel\Services\ClientCareService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('site_access_service')));
+        $this->container->singleton('site_assurance_service', static fn(Container $c): \Sentinel\Services\SiteAssuranceService => new \Sentinel\Services\SiteAssuranceService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('workflow_language_service')));
+        $this->container->singleton('evidence_retention_service', static fn(Container $c): \Sentinel\Services\EvidenceRetentionService => new \Sentinel\Services\EvidenceRetentionService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT)));
+        $this->container->singleton('photo_report_service', static fn(Container $c): \Sentinel\Services\PhotoReportService => new \Sentinel\Services\PhotoReportService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('evidence_retention_service')));
+        $this->container->singleton('report_mail_transport',static fn(Container $c): \Sentinel\Services\ReportMailTransport=>new \Sentinel\Services\SmtpReportTransport($c->make(self::SERVICE_CONFIG)));
+        $this->container->singleton('client_report_delivery_service',static fn(Container $c): \Sentinel\Services\ClientReportDeliveryService=>new \Sentinel\Services\ClientReportDeliveryService($c->make(self::SERVICE_DATABASE),$c->make(self::SERVICE_RUNTIME_CONTEXT),$c->make(self::SERVICE_AUDIT),$c->make('alert_notification_service'),$c->make('report_mail_transport'),$c->make(self::SERVICE_CONFIG)));
+
         $this->container->singleton(
             self::SERVICE_RUNTIME_CONTEXT,
             static fn (Container $c): RuntimeContext => new RuntimeContext(
@@ -155,7 +203,7 @@ final class Application
         if (!$this->container->has(self::SERVICE_JWT)) {
             $this->container->singleton(
                 self::SERVICE_JWT,
-                static fn (Container $c): \Sentinel\Security\JwtService => new \Sentinel\Security\JwtService($c->make(self::SERVICE_CONFIG)),
+                static fn (Container $c): \Sentinel\Security\JwtService => new \Sentinel\Security\JwtService($c->make(self::SERVICE_CONFIG), $c->make('session_security_service')),
             );
         }
 
@@ -193,6 +241,7 @@ final class Application
                     $c->make(self::SERVICE_PERMISSION_REPOSITORY),
                     $c->make(self::SERVICE_RUNTIME_CONTEXT),
                     $c->make('subscription_service'),
+                    $c->make('subcontractor_policy'),
                 ),
             );
         }
@@ -309,7 +358,7 @@ final class Application
             $this->container->singleton('inspection_management_service', static fn (Container $c): \Sentinel\Services\InspectionManagementService => new \Sentinel\Services\InspectionManagementService($c->make('operational_repository'), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_AUDIT)));
         }
         if (!$this->container->has('alert_notification_service')) {
-            $this->container->singleton('alert_notification_service', static fn (Container $c): \Sentinel\Services\AlertNotificationService => new \Sentinel\Services\AlertNotificationService($c->make('operational_repository'), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_AUDIT)));
+            $this->container->singleton('alert_notification_service', static fn (Container $c): \Sentinel\Services\AlertNotificationService => new \Sentinel\Services\AlertNotificationService($c->make('operational_repository'), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_AUDIT),$c->make('workflow_language_service')));
         }
         if (!$this->container->has('operational_reporting_service')) {
             $this->container->singleton('operational_reporting_service', static fn (Container $c): \Sentinel\Services\OperationalReportingService => new \Sentinel\Services\OperationalReportingService($c->make(self::SERVICE_DATABASE), $c->make(self::SERVICE_RUNTIME_CONTEXT), $c->make(self::SERVICE_CSV_EXPORT)));
@@ -534,6 +583,7 @@ final class Application
                 self::SERVICE_SHIFT_ASSIGNMENT_MANAGEMENT,
                 static fn (Container $c): \Sentinel\Services\ShiftAssignmentManagementService => new \Sentinel\Services\ShiftAssignmentManagementService(
                     $c->make(self::SERVICE_SHIFT_ASSIGNMENT_REPOSITORY),
+                    $c->make('availability_service'),
                 ),
             );
         }
@@ -697,6 +747,7 @@ final class Application
                 static fn (Container $c): \Sentinel\Security\LoginService => new \Sentinel\Security\LoginService(
                     $c->make(self::SERVICE_PASSWORD_AUTHENTICATOR),
                     $c->make(self::SERVICE_JWT),
+                    $c->make('session_security_service'),
                 ),
             );
         }
@@ -1004,7 +1055,7 @@ final class Application
     public function handle(Request $request): Response
     {
         $context = $this->runtimeContext();
-        $request->assertJsonBodyIsAcceptable((int) $this->config()->get('security.max_json_body_bytes', 1048576));
+        $request->assertJsonBodyIsAcceptable((int) $this->config()->get('security.max_json_body_bytes', 4194304));
         // A long-lived worker must not carry authentication state into a new request.
         $context->reset();
         $context->setRequest($request);
