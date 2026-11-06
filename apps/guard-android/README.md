@@ -1,5 +1,9 @@
 # Sentinel Guard Android
 
+Version 0.10 (versionCode 18) adds first-party sponsor banners to the native home
+screen for explicit Free subscriptions only. Paid, unknown and offline states
+hide ads; capture/emergency screens have none. See [business operations 0.13](../../docs/BUSINESS_OPERATIONS_0_13.md).
+
 Version 0.7 adds encrypted offline incident/occurrence reports with optional JPEG
 camera thumbnails, unchanged-command queue retries, diagnostic snapshots, MFA
 login and per-session logout. Device-owner-only kiosk/app allowlisting and

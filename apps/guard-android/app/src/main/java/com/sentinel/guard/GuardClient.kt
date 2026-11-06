@@ -34,6 +34,7 @@ class GuardClient(context: Context) {
         if(BuildConfig.SENTINEL_SIGNUP_URL.isNotBlank()) return ServerConfiguration.signupUrl("",BuildConfig.SENTINEL_SIGNUP_URL,BuildConfig.DEBUG)
         return configuredServer()?.let { ServerConfiguration.signupUrl(it,"",BuildConfig.DEBUG) }
     }
+    fun sponsorPlacement():JSONObject {val s=session()?:throw ApiFailure(401,"Sign in required");return request(s.base,s.token,"/auth/sponsor",readTimeout=3000).getJSONObject("data")}
     fun adminUrl(): String? = configuredServer()?.plus("/admin/index.html")
     fun distributionUrl(): String? = configuredServer()?.plus("/downloads")
     fun session(): GuardSession? = secure.get("session")?.let { val s = JSONObject(it); GuardSession(s.getString("base"), s.getString("token"), s.getString("user")) }

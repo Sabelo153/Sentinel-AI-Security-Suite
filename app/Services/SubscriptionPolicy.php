@@ -29,6 +29,8 @@ final class SubscriptionPolicy
         // Recovery access is still explicitly controlled by RBAC on every plan.
         if (in_array($permission, ['support.view', 'support.manage', 'support.delegated_view', 'client_portal.read'], true)) return self::isKnownPlan($plan);
         $module = explode('.', $permission, 2)[0];
+        if(in_array($module,['visitor_invites','backups','pilot_setup','business_ops'],true)||in_array($permission,['shift_offers.self','fleet.self','renewals.client'],true))return self::isKnownPlan($plan);
+        if(in_array($module,['shift_offers','fleet','renewals'],true))return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
         if(in_array($module,['customer_support','release_notices','operational_alerts'],true)||$permission==='service_reviews.client')return self::isKnownPlan($plan);
         if($module==='service_reviews')return in_array($plan,['ESSENTIAL','PROFESSIONAL','ENTERPRISE'],true);
         if(in_array($module,['radio','control_map'],true))return in_array($plan,['PROFESSIONAL','ENTERPRISE'],true);

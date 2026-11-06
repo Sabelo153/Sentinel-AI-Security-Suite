@@ -76,4 +76,5 @@ SOURCE 071_client_report_delivery.sql;
 SOURCE 072_client_workflows.sql;
 SOURCE 073_operational_readiness.sql;
 SOURCE 074_operations_hub.sql;
+SOURCE 075_business_operations.sql;
 

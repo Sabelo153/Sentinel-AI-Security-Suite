@@ -222,5 +222,12 @@
     "symptom": "Busy voice floor, old map points, missing client review, failed webhook, pending ticket or overdue operational source",
     "remedy": "Apply schema 074 and explicit role permissions. Configure channel membership, review mapped clients, confirm queue-contact snapshots and active alert recipients. Schedule the operations-hub worker per tenant. MFA is required to manage integration credentials. Configure public HTTPS webhook receivers and verify HMAC before enabling delivery.",
     "manual": "Voice is foreground short-burst audio after release, not guaranteed always-on radio. Old GPS is stale, missing data unknown. API keys are site/scoped and secrets shown once. Review UNCERTAIN webhook attempts before retrying. Diagnostic sharing needs ticket-owner consent; emergency response still uses the site phone/radio procedure."
+  },
+  {
+    "id": "business_operations",
+    "title": "Pilot setup, business operations, sponsors and recovery",
+    "symptom": "Shift award blocked, expired visitor QR, grounded vehicle, stale renewal or missing backup receipts",
+    "remedy": "Apply schema 075, seed explicit tenant permissions and schedule the business and backup workers. Recheck shift eligibility, visitor approval/windows, vehicle inspections and accepted renewal fingerprints. Configure a separate backup key and private storage outside the public root. Paid plans never receive sponsor campaigns.",
+    "manual": "A client must approve visitor passes and confirm renewal terms. Managers confirm shift awards. Restore verification is an isolated data round-trip, supplemented by a recorded production restore drill. Sponsor creatives are deployment-owned; no advertising network, tracking SDK or Play Store is required."
   }
 ]

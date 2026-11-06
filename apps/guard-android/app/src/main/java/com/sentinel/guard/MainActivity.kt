@@ -52,6 +52,12 @@ class MainActivity : Activity() {
     private var locationCancellation: CancellationSignal? = null
     private var legacyLocationListener: LocationListener? = null
     private var qrCallback: ((String) -> Unit)? = null
+    private val sponsorWorker=Executors.newSingleThreadExecutor()
+    private val sponsorHandler=Handler(Looper.getMainLooper())
+    private var sponsorTask:Runnable?=null
+    private var sponsorBox:LinearLayout?=null
+    private var sponsorGeneration=0
+    private var sponsorRequest=0
     private val worker = Executors.newSingleThreadExecutor()
     private val navy = Color.rgb(6,35,66)
     private val cyan = Color.rgb(18,204,229)
@@ -73,6 +79,7 @@ class MainActivity : Activity() {
         if(client.pending()>0)SyncJob.requestSync(applicationContext)
     }
     private fun screen(title: String) {
+        sponsorGeneration++;sponsorTask?.let{sponsorHandler.removeCallbacks(it)};sponsorTask=null;sponsorBox=null
         passwordVisibility?.isChecked=false
         passwordVisibility=null
         val scroll=ScrollView(this).apply { alpha=0f;translationY=16f*resources.displayMetrics.density;setBackgroundColor(Color.rgb(246,249,251));isFillViewport=true };layout=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(22),dp(34),dp(22),dp(36));gravity=Gravity.CENTER_HORIZONTAL };scroll.addView(layout);setContentView(scroll)
@@ -264,8 +271,25 @@ class MainActivity : Activity() {
                 AlertDialog.Builder(this).setTitle(R.string.choose_assignment).setItems(labels){_,index->enqueue("start_patrol",JSONObject().put("employee_assignment_id",assignments[index].get("employee_assignment_id")).put("patrol_route_id",route.get("patrol_route_id")).put("shift_assignment_id",shift.get("shift_assignment_id")).put("started_at",now()))}.show()
             }
         }
+        val sponsor=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE;setPadding(dp(12),dp(12),dp(12),dp(12));background=surface(Color.WHITE,12,Color.LTGRAY)}
+        sponsorBox=sponsor;layout.addView(sponsor);refreshSponsor()
         text(getString(R.string.offline_events_notice))
         button(getString(R.string.sign_out)) { background{val result=client.logout();runOnUiThread{nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);loginScreen();notice.text=result}} }
+    }
+    private fun refreshSponsor(){
+        val box=sponsorBox?:return;val session=client.session()?:return;val generation=sponsorGeneration;val requestId=++sponsorRequest
+        sponsorTask?.let{sponsorHandler.removeCallbacks(it)};box.visibility=View.GONE;box.removeAllViews()
+        if(sponsorWorker.isShutdown)return
+        sponsorWorker.execute{val placement=try{client.sponsorPlacement()}catch(_:Exception){null};runOnUiThread{
+            if(isFinishing||isDestroyed||generation!=sponsorGeneration||requestId!=sponsorRequest||client.session()?.token!=session.token||sponsorBox!==box)return@runOnUiThread
+            if(placement!=null&&SponsorPolicy.canShow(placement.optBoolean("enabled"),placement.optString("plan_code"))){val c=placement.optJSONObject("campaign");val url=c?.optString("url")?.let{SponsorPolicy.destination(session.base,it)};if(c!=null&&url!=null){
+                box.addView(TextView(this).apply{text="Sponsored · "+c.optString("title");setTextColor(ink);setTypeface(Typeface.DEFAULT,Typeface.BOLD)})
+                box.addView(TextView(this).apply{text=c.optString("body");setTextColor(muted)})
+                box.addView(Button(this).apply{text=c.optString("cta","View sponsor");isAllCaps=false;setOnClickListener{if(!sponsorWorker.isShutdown)sponsorWorker.execute{val fresh=try{client.sponsorPlacement()}catch(_:Exception){null};runOnUiThread{if(generation==sponsorGeneration&&client.session()?.token==session.token&&fresh!=null&&SponsorPolicy.canShow(fresh.optBoolean("enabled"),fresh.optString("plan_code")))try{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(url)))}catch(_:Exception){box.visibility=View.GONE}else box.visibility=View.GONE}}}})
+                box.visibility=View.VISIBLE
+            }}
+            sponsorTask=Runnable{refreshSponsor()}.also{sponsorHandler.postDelayed(it,15000)}
+        }}
     }
     private fun historyScreen() {
         screen("My patrol history")
@@ -444,10 +468,10 @@ class MainActivity : Activity() {
         Handler(Looper.getMainLooper()).postDelayed({if(locationCancellation===signal){signal.cancel();locationCancellation=null};legacyLocationListener?.let{manager.removeUpdates(it);legacyLocationListener=null}},30000)
     }
     override fun onRequestPermissionsResult(requestCode:Int,permissions:Array<out String>,grantResults:IntArray){super.onRequestPermissionsResult(requestCode,permissions,grantResults);if(requestCode==41&&grantResults.firstOrNull()==PackageManager.PERMISSION_GRANTED)captureLocation()else notice.text=getString(R.string.location_permission_denied)}
-    override fun onPause(){super.onPause();passwordVisibility?.isChecked=false;nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);locationCancellation?.cancel()}
-    override fun onDestroy(){try{getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(reconnectCallback)}catch(_:IllegalArgumentException){};super.onDestroy();worker.shutdown()}
+    override fun onPause(){super.onPause();sponsorGeneration++;sponsorTask?.let{sponsorHandler.removeCallbacks(it)};sponsorBox?.visibility=View.GONE;passwordVisibility?.isChecked=false;nfcSession=null;NfcAdapter.getDefaultAdapter(this)?.disableReaderMode(this);locationCancellation?.cancel()}
+    override fun onDestroy(){try{getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(reconnectCallback)}catch(_:IllegalArgumentException){};super.onDestroy();sponsorHandler.removeCallbacksAndMessages(null);sponsorWorker.shutdown();worker.shutdown()}
 
-    override fun onPostResume(){super.onPostResume();applyManagedPolicy()}
+    override fun onPostResume(){super.onPostResume();applyManagedPolicy();if(sponsorBox!=null)refreshSponsor()}
     private fun applyManagedPolicy(){try{val controller=ManagedDeviceController(this);val oldState=controller.state();val oldRevision=controller.revision();controller.apply(this);if(oldState!=controller.state()||oldRevision!=controller.revision())reportManagedPolicyState()}catch(_:Exception){notice.text="Managed policy could not be fully applied. Contact your supervisor; recovery remains available."}}
     private fun reportManagedPolicyState(){if(!worker.isShutdown)worker.execute{try{client.refreshManagedPolicy()}catch(_:Exception){/* Last-known acknowledgement will be retried on subsequent contact. */}}}
     private fun managedDeviceScreen(){

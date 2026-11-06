@@ -245,6 +245,44 @@ SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage'
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
 UNION ALL
+SELECT 'shift_offers.view' AS permission_code, 'shift_offers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.manage' AS permission_code, 'shift_offers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'shift_offers.self' AS permission_code, 'shift_offers' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'visitor_invites.view' AS permission_code, 'visitor_invites' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'visitor_invites.manage' AS permission_code, 'visitor_invites' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'visitor_invites.client' AS permission_code, 'visitor_invites' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'visitor_invites.gate' AS permission_code, 'visitor_invites' AS module_name, 'gate' AS action_name
+UNION ALL
+SELECT 'fleet.view' AS permission_code, 'fleet' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'fleet.manage' AS permission_code, 'fleet' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'fleet.self' AS permission_code, 'fleet' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'renewals.view' AS permission_code, 'renewals' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'renewals.manage' AS permission_code, 'renewals' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'renewals.client' AS permission_code, 'renewals' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'backups.view' AS permission_code, 'backups' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'backups.manage' AS permission_code, 'backups' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'backups.run' AS permission_code, 'backups' AS module_name, 'run' AS action_name
+UNION ALL
+SELECT 'pilot_setup.view' AS permission_code, 'pilot_setup' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'pilot_setup.manage' AS permission_code, 'pilot_setup' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'business_ops.run' AS permission_code, 'business_ops' AS module_name, 'run' AS action_name
+UNION ALL
 SELECT 'radio.self' AS permission_code, 'radio' AS module_name, 'self' AS action_name
 UNION ALL
 SELECT 'radio.manage' AS permission_code, 'radio' AS module_name, 'manage' AS action_name
@@ -663,6 +701,44 @@ UNION ALL
 SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.view' AS permission_code, 'shift_offers' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'shift_offers.manage' AS permission_code, 'shift_offers' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'shift_offers.self' AS permission_code, 'shift_offers' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'visitor_invites.view' AS permission_code, 'visitor_invites' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'visitor_invites.manage' AS permission_code, 'visitor_invites' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'visitor_invites.client' AS permission_code, 'visitor_invites' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'visitor_invites.gate' AS permission_code, 'visitor_invites' AS module_name, 'gate' AS action_name
+UNION ALL
+SELECT 'fleet.view' AS permission_code, 'fleet' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'fleet.manage' AS permission_code, 'fleet' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'fleet.self' AS permission_code, 'fleet' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'renewals.view' AS permission_code, 'renewals' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'renewals.manage' AS permission_code, 'renewals' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'renewals.client' AS permission_code, 'renewals' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'backups.view' AS permission_code, 'backups' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'backups.manage' AS permission_code, 'backups' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'backups.run' AS permission_code, 'backups' AS module_name, 'run' AS action_name
+UNION ALL
+SELECT 'pilot_setup.view' AS permission_code, 'pilot_setup' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'pilot_setup.manage' AS permission_code, 'pilot_setup' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'business_ops.run' AS permission_code, 'business_ops' AS module_name, 'run' AS action_name
 UNION ALL
 SELECT 'radio.self' AS permission_code, 'radio' AS module_name, 'self' AS action_name
 UNION ALL

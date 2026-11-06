@@ -5,7 +5,9 @@ A security operations development project by **Sabelo Andile Biyela**, based in 
 **[Live project website](https://sabelo153.github.io/Sentinel-AI-Security-Suite/)** — interactive sample tour hosted on GitHub Pages. Login and operational records require separate server hosting.
 
 ## Project status
-The latest web/API addition is [Sentinel 0.12 operations hub](docs/OPERATIONS_HUB_0_12.md): short-burst site voice channels, a geographic control-room map, monthly client service reviews, scoped API keys/signed webhooks, consent-based support tools and operational alerts.
+The latest addition is [Sentinel 0.13 business operations](docs/BUSINESS_OPERATIONS_0_13.md): manager-confirmed open shifts, client-approved visitor QR passes, fleet records, effective-dated renewals, encrypted tenant backups with restore verification, pilot setup and your own sponsor banners on Free only. Paid plans stay ad-free. Android 0.10 adds home-screen sponsor support without Play Store dependencies.
+
+The preceding web/API addition is [Sentinel 0.12 operations hub](docs/OPERATIONS_HUB_0_12.md): short-burst site voice channels, a geographic control-room map, monthly client service reviews, scoped API keys/signed webhooks, consent-based support tools and operational alerts.
 
 The preceding [Sentinel 0.11 operational readiness](docs/OPERATIONAL_READINESS_0_11.md): encrypted offline inspections, signed key/card custody, qualified replacement suggestions, emergency roll calls and drills, reviewed language content, and tenant branding/subscription administration.
 
