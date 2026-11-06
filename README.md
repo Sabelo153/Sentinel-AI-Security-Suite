@@ -5,7 +5,9 @@ A security operations development project by **Sabelo Andile Biyela**, based in 
 **[Live project website](https://sabelo153.github.io/Sentinel-AI-Security-Suite/)** — interactive sample tour hosted on GitHub Pages. Login and operational records require separate server hosting.
 
 ## Project status
-The latest web/API addition is [Sentinel 0.11 operational readiness](docs/OPERATIONAL_READINESS_0_11.md): encrypted offline inspections, signed key/card custody, qualified replacement suggestions, emergency roll calls and drills, reviewed language content, and tenant branding/subscription administration.
+The latest web/API addition is [Sentinel 0.12 operations hub](docs/OPERATIONS_HUB_0_12.md): short-burst site voice channels, a geographic control-room map, monthly client service reviews, scoped API keys/signed webhooks, consent-based support tools and operational alerts.
+
+The preceding [Sentinel 0.11 operational readiness](docs/OPERATIONAL_READINESS_0_11.md): encrypted offline inspections, signed key/card custody, qualified replacement suggestions, emergency roll calls and drills, reviewed language content, and tenant branding/subscription administration.
 
 The preceding [Sentinel 0.10 client workflows](docs/CLIENT_WORKFLOWS_0_10.md): custom inspection forms with required photos and failed-check actions, client complaints and confirmation, leave-aware rostering, assigned-site access, explicit report acknowledgements, and quotation-to-contract/site mobilisation.
 

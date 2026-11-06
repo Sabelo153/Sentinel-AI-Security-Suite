@@ -245,6 +245,38 @@ SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage'
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
 UNION ALL
+SELECT 'radio.self' AS permission_code, 'radio' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'radio.manage' AS permission_code, 'radio' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_map.view' AS permission_code, 'control_map' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.view' AS permission_code, 'service_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.manage' AS permission_code, 'service_reviews' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_reviews.client' AS permission_code, 'service_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'integrations.deliver' AS permission_code, 'integrations' AS module_name, 'deliver' AS action_name
+UNION ALL
+SELECT 'integrations.view' AS permission_code, 'integrations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'integrations.manage' AS permission_code, 'integrations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.view' AS permission_code, 'customer_support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'customer_support.manage' AS permission_code, 'customer_support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.self' AS permission_code, 'customer_support' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'release_notices.view' AS permission_code, 'release_notices' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'release_notices.manage' AS permission_code, 'release_notices' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'operational_alerts.view' AS permission_code, 'operational_alerts' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'operational_alerts.manage' AS permission_code, 'operational_alerts' AS module_name, 'manage' AS action_name
+UNION ALL
 SELECT 'key_register.view' AS permission_code, 'key_register' AS module_name, 'view' AS action_name
 UNION ALL
 SELECT 'key_register.manage' AS permission_code, 'key_register' AS module_name, 'manage' AS action_name
@@ -631,6 +663,38 @@ UNION ALL
 SELECT 'evidence.manage' AS permission_code, 'evidence' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'service_levels.view' AS permission_code, 'service_levels' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'radio.self' AS permission_code, 'radio' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'radio.manage' AS permission_code, 'radio' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'control_map.view' AS permission_code, 'control_map' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.view' AS permission_code, 'service_reviews' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'service_reviews.manage' AS permission_code, 'service_reviews' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'service_reviews.client' AS permission_code, 'service_reviews' AS module_name, 'client' AS action_name
+UNION ALL
+SELECT 'integrations.deliver' AS permission_code, 'integrations' AS module_name, 'deliver' AS action_name
+UNION ALL
+SELECT 'integrations.view' AS permission_code, 'integrations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'integrations.manage' AS permission_code, 'integrations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.view' AS permission_code, 'customer_support' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'customer_support.manage' AS permission_code, 'customer_support' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'customer_support.self' AS permission_code, 'customer_support' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'release_notices.view' AS permission_code, 'release_notices' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'release_notices.manage' AS permission_code, 'release_notices' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'operational_alerts.view' AS permission_code, 'operational_alerts' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'operational_alerts.manage' AS permission_code, 'operational_alerts' AS module_name, 'manage' AS action_name
 UNION ALL
 SELECT 'key_register.view' AS permission_code, 'key_register' AS module_name, 'view' AS action_name
 UNION ALL

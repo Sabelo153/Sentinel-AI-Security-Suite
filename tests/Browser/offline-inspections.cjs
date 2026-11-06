@@ -1,7 +1,7 @@
 // Requires Playwright and Microsoft Edge. Uses a local fixture HTTP server.
 const fs=require('fs'),path=require('path'),http=require('http'),assert=require('node:assert/strict'),{chromium}=require('playwright');
 (async()=>{
-  const root=path.resolve(__dirname,'../../public');let posts=0,failOnce=true;const accepted=new Map(),errors=[];
+  const root=path.resolve(__dirname,'../../public');let posts=0,failOnce=true;const healthReports=[];const accepted=new Map(),errors=[];
   const template={form_id:1,site_id:1,form_code:'GATE',title:'Gate offline check',revision:1,display_language:'en',fields_json:JSON.stringify([{key:'gate',label:'Gate secure',type:'PASS_FAIL',required:true,photo_required:true,followup_on_fail:true}])};
   const server=http.createServer(async(req,res)=>{
     const url=new URL(req.url,'http://localhost');
@@ -10,6 +10,7 @@ const fs=require('fs'),path=require('path'),http=require('http'),assert=require(
       if(url.pathname.endsWith('/auth/me'))data={user_id:req.headers.authorization==='Bearer other-user'?'3':'2'};
       else if(url.pathname.endsWith('/auth/tenant'))data={company_id:101};
       else if(url.pathname==='/api/v1/inspection-forms')data=[template];
+      else if(url.pathname==='/api/v1/inspection-queue-health'){let raw='';for await(const chunk of req)raw+=chunk;healthReports.push(JSON.parse(raw));data={received:true};}
       else if(url.pathname.endsWith('/submit')){let raw='';for await(const chunk of req)raw+=chunk;const body=JSON.parse(raw);posts++;if(!accepted.has(body.operation_uuid))accepted.set(body.operation_uuid,{id:'42',received:true});if(failOnce){failOnce=false;res.statusCode=503;return res.end(JSON.stringify({message:'Receipt connection interrupted'}));}data=accepted.get(body.operation_uuid);}
       else data={};return res.end(JSON.stringify({data}));
     }
@@ -30,7 +31,7 @@ const fs=require('fs'),path=require('path'),http=require('http'),assert=require(
     await page.reload();await page.locator('#passphrase').fill('offline-test-passphrase');await page.getByRole('button',{name:'Unlock or create my vault'}).click();await page.locator('#queue').getByText(/QUEUED/).waitFor();
     const raw=await page.evaluate(async()=>{const db=await new Promise(resolve=>{const r=indexedDB.open('sentinel-inspection-vault',1);r.onsuccess=()=>resolve(r.result);});return new Promise(resolve=>{const r=db.transaction('accounts').objectStore('accounts').get('101:2');r.onsuccess=()=>resolve(new TextDecoder().decode(r.result.cipher));});});assert.equal(raw.includes('Gate offline check'),false);assert.equal(raw.includes('photo_base64'),false);
     await context.setOffline(false);await page.getByRole('status').filter({hasText:'Pending inspections retained'}).waitFor();assert.equal(accepted.size,1);await page.locator('#queue').getByText(/QUEUED/).waitFor();
-    await page.getByRole('button',{name:'Sync now',exact:true}).click();await page.locator('#receipts').getByText(/server submission 42/).waitFor();await page.locator('#queue').getByText('No pending inspections.',{exact:true}).waitFor();assert.equal(accepted.size,1);assert.equal(posts,2);
+    await page.getByRole('button',{name:'Sync now',exact:true}).click();await page.locator('#receipts').getByText(/server submission 42/).waitFor();await page.locator('#queue').getByText('No pending inspections.',{exact:true}).waitFor();assert.equal(accepted.size,1);assert.equal(posts,2);assert.ok(healthReports.some(h=>h.pending_count===1));assert.equal(healthReports.at(-1).pending_count,0);
     const concurrent=await page.evaluate(async()=>{
       const a=new SentinelInspectionVault({company_id:101,user_id:2}),b=new SentinelInspectionVault({company_id:101,user_id:2});await a.unlock('offline-test-passphrase');await b.unlock('offline-test-passphrase');
       await Promise.all([a.enqueue({form_id:1,site_id:1,title:'First',revision:1},{operation_uuid:crypto.randomUUID(),answers:{a:{value:'PASS'}}}),b.enqueue({form_id:1,site_id:1,title:'Second',revision:1},{operation_uuid:crypto.randomUUID(),answers:{a:{value:'FAIL'}}})]);

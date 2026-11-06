@@ -13,6 +13,7 @@ return static function (Router $router, Container $container): void {
     (require __DIR__.'/site-assurance.php')($router,$container);
     (require __DIR__.'/client-workflows.php')($router,$container);
     (require __DIR__.'/operational-readiness.php')($router,$container);
+    (require __DIR__.'/operations-hub.php')($router,$container);
     (require __DIR__.'/photo-reports.php')($router,$container);
     (require __DIR__.'/client-report-delivery.php')($router,$container);
     // Installation credential authenticates this endpoint; no customer records returned.

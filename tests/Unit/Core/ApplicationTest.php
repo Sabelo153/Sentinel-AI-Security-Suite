@@ -192,8 +192,8 @@ final class ApplicationTest extends TestCase
             self::assertNotSame('', trim((string) $route['permission']));
         }
 
-        // The MDM endpoint authenticates a scoped installation credential, not a guard JWT.
-        self::assertSame(['/api/v1/managed-device/policy', '/api/v1/status', '/api/v1/plans', '/api/v1/auth/signup', '/api/v1/auth/login'], $publicPaths);
+        // MDM and connect endpoints authenticate their own scoped credentials; the exact exception list remains explicit.
+        self::assertSame(['/api/v1/connect/alarms','/api/v1/connect/access','/api/v1/connect/attendance','/api/v1/managed-device/policy', '/api/v1/status', '/api/v1/plans', '/api/v1/auth/signup', '/api/v1/auth/login'], $publicPaths);
     }
 
     public function testApiRouteAndUnknownRoute(): void

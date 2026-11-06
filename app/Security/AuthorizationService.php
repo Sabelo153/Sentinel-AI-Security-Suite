@@ -23,7 +23,7 @@ final class AuthorizationService
         if ($userId === '' || $permission === '') {
             return false;
         }
-        if (in_array($permission, ['support.manage', 'managed_android.manage', 'retention.manage'], true) && !$this->context->mfaVerified()) {
+        if (in_array($permission, ['support.manage', 'managed_android.manage', 'retention.manage', 'integrations.manage'], true) && !$this->context->mfaVerified()) {
             return false;
         }
 
@@ -38,6 +38,7 @@ final class AuthorizationService
             'client_requests.view','client_requests.manage','client_requests.client',
             'report_reviews.view','report_reviews.client','availability.self','users.password_change',
             'key_register.view','key_register.manage','key_register.self','emergency_procedures.view','emergency_procedures.manage','workflow_languages.self','workflow_languages.view','company_branding.read',
+            'radio.self','radio.manage','control_map.view','service_reviews.view','service_reviews.manage','service_reviews.client','customer_support.self','customer_support.view','customer_support.manage','release_notices.view','operational_alerts.view','operational_alerts.manage',
         ],true);
         return true;
     }

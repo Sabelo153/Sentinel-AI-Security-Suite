@@ -215,5 +215,12 @@
     "symptom": "Offline queue pending, key return incomplete, no eligible replacement, stale translation or incomplete onboarding",
     "remedy": "Apply schema 073, deploy matching browser assets and seed tenant permissions. Download forms online before offline use; unlock the correct account vault. Reconnect with the same login and retain NEEDS_REVIEW submissions. Review training, approved absence, rest and weekly-hour preferences before selecting replacements.",
     "manual": "Key/card signatures are logged handover attestations. Verify physical return and lost-card containment. Review translated procedures with a fluent operator; missing/stale content falls back to English. Emergency records do not call responders. Subscription changes are recorded requests; account administration handles activation."
+  },
+  {
+    "id": "operations_hub",
+    "title": "Voice, control map, client reviews, integrations and operational alerts",
+    "symptom": "Busy voice floor, old map points, missing client review, failed webhook, pending ticket or overdue operational source",
+    "remedy": "Apply schema 074 and explicit role permissions. Configure channel membership, review mapped clients, confirm queue-contact snapshots and active alert recipients. Schedule the operations-hub worker per tenant. MFA is required to manage integration credentials. Configure public HTTPS webhook receivers and verify HMAC before enabling delivery.",
+    "manual": "Voice is foreground short-burst audio after release, not guaranteed always-on radio. Old GPS is stale, missing data unknown. API keys are site/scoped and secrets shown once. Review UNCERTAIN webhook attempts before retrying. Diagnostic sharing needs ticket-owner consent; emergency response still uses the site phone/radio procedure."
   }
 ]
