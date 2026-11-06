@@ -229,5 +229,12 @@
     "symptom": "Shift award blocked, expired visitor QR, grounded vehicle, stale renewal or missing backup receipts",
     "remedy": "Apply schema 075, seed explicit tenant permissions and schedule the business and backup workers. Recheck shift eligibility, visitor approval/windows, vehicle inspections and accepted renewal fingerprints. Configure a separate backup key and private storage outside the public root. Paid plans never receive sponsor campaigns.",
     "manual": "A client must approve visitor passes and confirm renewal terms. Managers confirm shift awards. Restore verification is an isolated data round-trip, supplemented by a recorded production restore drill. Sponsor creatives are deployment-owned; no advertising network, tracking SDK or Play Store is required."
+  },
+  {
+    "id": "workforce_assurance",
+    "title": "Learning, property custody, investigations and stock",
+    "symptom": "Quiz blocked, missing property receipt, stale investigation review or insufficient uniform stock",
+    "remedy": "Apply schema 076 and explicit tenant permissions. Check lesson acknowledgement and attempt limits, property identity/signature, assigned investigator and separate reviewer, stock counts and signed acceptance. The business worker reports expiry, low stock and overdue follow-up.",
+    "manual": "Internal course completion does not verify statutory qualifications. Check property entitlement in person. Evidence holds remain until reviewed by an authorised retention administrator. Physical returns must be counted before restocking; quarantine and write-offs never increase availability."
   }
 ]

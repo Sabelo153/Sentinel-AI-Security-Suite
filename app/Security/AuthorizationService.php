@@ -38,7 +38,7 @@ final class AuthorizationService
             'client_requests.view','client_requests.manage','client_requests.client',
             'report_reviews.view','report_reviews.client','availability.self','users.password_change',
             'key_register.view','key_register.manage','key_register.self','emergency_procedures.view','emergency_procedures.manage','workflow_languages.self','workflow_languages.view','company_branding.read',
-            'radio.self','radio.manage','control_map.view','service_reviews.view','service_reviews.manage','service_reviews.client','customer_support.self','customer_support.view','customer_support.manage','release_notices.view','operational_alerts.view','operational_alerts.manage','shift_offers.view','shift_offers.manage','shift_offers.self','visitor_invites.view','visitor_invites.manage','visitor_invites.client','visitor_invites.gate','fleet.view','fleet.manage','fleet.self',
+            'radio.self','radio.manage','control_map.view','service_reviews.view','service_reviews.manage','service_reviews.client','customer_support.self','customer_support.view','customer_support.manage','release_notices.view','operational_alerts.view','operational_alerts.manage','shift_offers.view','shift_offers.manage','shift_offers.self','visitor_invites.view','visitor_invites.manage','visitor_invites.client','visitor_invites.gate','fleet.view','fleet.manage','fleet.self','learning.view','learning.manage','learning.self','lost_found.view','lost_found.manage','lost_found.dispose','investigations.view','investigations.manage','investigations.review','stock.view','stock.manage','stock.adjust','stock.self',
         ],true);
         return true;
     }

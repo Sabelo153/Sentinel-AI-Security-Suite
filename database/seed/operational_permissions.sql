@@ -3,6 +3,32 @@
 -- Preflight: any row below is a naming conflict requiring review.
 SELECT p.permission_code AS existing_code, seed.permission_code AS requested_code
 FROM permissions p JOIN (
+SELECT 'learning.view' AS permission_code, 'learning' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'learning.manage' AS permission_code, 'learning' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'learning.self' AS permission_code, 'learning' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'lost_found.view' AS permission_code, 'lost_found' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lost_found.manage' AS permission_code, 'lost_found' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lost_found.dispose' AS permission_code, 'lost_found' AS module_name, 'dispose' AS action_name
+UNION ALL
+SELECT 'investigations.view' AS permission_code, 'investigations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'investigations.manage' AS permission_code, 'investigations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'investigations.review' AS permission_code, 'investigations' AS module_name, 'review' AS action_name
+UNION ALL
+SELECT 'stock.view' AS permission_code, 'stock' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'stock.manage' AS permission_code, 'stock' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'stock.adjust' AS permission_code, 'stock' AS module_name, 'adjust' AS action_name
+UNION ALL
+SELECT 'stock.self' AS permission_code, 'stock' AS module_name, 'self' AS action_name
+UNION ALL
 SELECT 'access_events.create' AS permission_code, 'access_events' AS module_name, 'create' AS action_name
 UNION ALL
 SELECT 'access_events.view' AS permission_code, 'access_events' AS module_name, 'view' AS action_name
@@ -460,6 +486,32 @@ WHERE p.company_id=@sentinel_company_id AND p.permission_code<>seed.permission_c
 INSERT INTO permissions (company_id,permission_code,permission_name,module_name,action_name,permission_description,status)
 SELECT c.company_id,seed.permission_code,seed.permission_code,seed.module_name,seed.action_name,'Canonical protected API permission','ACTIVE'
 FROM companies c JOIN (
+SELECT 'learning.view' AS permission_code, 'learning' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'learning.manage' AS permission_code, 'learning' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'learning.self' AS permission_code, 'learning' AS module_name, 'self' AS action_name
+UNION ALL
+SELECT 'lost_found.view' AS permission_code, 'lost_found' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'lost_found.manage' AS permission_code, 'lost_found' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'lost_found.dispose' AS permission_code, 'lost_found' AS module_name, 'dispose' AS action_name
+UNION ALL
+SELECT 'investigations.view' AS permission_code, 'investigations' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'investigations.manage' AS permission_code, 'investigations' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'investigations.review' AS permission_code, 'investigations' AS module_name, 'review' AS action_name
+UNION ALL
+SELECT 'stock.view' AS permission_code, 'stock' AS module_name, 'view' AS action_name
+UNION ALL
+SELECT 'stock.manage' AS permission_code, 'stock' AS module_name, 'manage' AS action_name
+UNION ALL
+SELECT 'stock.adjust' AS permission_code, 'stock' AS module_name, 'adjust' AS action_name
+UNION ALL
+SELECT 'stock.self' AS permission_code, 'stock' AS module_name, 'self' AS action_name
+UNION ALL
 SELECT 'access_events.create' AS permission_code, 'access_events' AS module_name, 'create' AS action_name
 UNION ALL
 SELECT 'access_events.view' AS permission_code, 'access_events' AS module_name, 'view' AS action_name

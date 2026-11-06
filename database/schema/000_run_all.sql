@@ -77,4 +77,5 @@ SOURCE 072_client_workflows.sql;
 SOURCE 073_operational_readiness.sql;
 SOURCE 074_operations_hub.sql;
 SOURCE 075_business_operations.sql;
+SOURCE 076_workforce_assurance.sql;
 
